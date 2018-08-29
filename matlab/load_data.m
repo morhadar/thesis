@@ -1,6 +1,6 @@
 %% load smbit data
-db_path = 'C:\Users\mhadar\Documents\personal\smbit\data\TAU\';
-db_path2 = 'C:\Users\mhadar\Documents\personal\smbit\data\data08052018\';
+db_path = 'C:\Users\mhadar\Documents\personal\thesis materials\data\smbit\packet1\';
+db_path2 = 'C:\Users\mhadar\Documents\personal\thesis materials\data\smbit\packet2\';
 
 variables_names = ...
 ["RSSI Avarage"  , "CinrAVG"     , "Modulation"  , "Radio Throughput" ; 
