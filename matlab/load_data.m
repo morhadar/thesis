@@ -19,9 +19,9 @@ save('meta_data.mat', 'meta_data');
 save('db.mat', 'db' , 'db1' , 'db2' );    
 
 %% load erricson data
-path_meta = 'data\Ericsson\Metadata_2015_2017_2018\mw_meta_20170105_1455.csv';
-path_raw = 'C:\Users\mhadar\Documents\personal\smbit\data\Ericsson\Rawdata_2017';
-path_raw_eband = 'C:\Users\mhadar\Documents\personal\smbit\data\Ericsson\80GHZ for Mor\E_band\e_band_rx_power';
+path_meta = 'C:\Users\mhadar\Documents\personal\thesis materials\data\Ericsson\Metadata_2015_2017_2018\mw_meta_20170105_1455.csv';
+path_raw = 'C:\Users\mhadar\Documents\personal\thesis materials\data\Ericsson\Rawdata_2017';
+path_raw_eband = 'C:\Users\mhadar\Documents\personal\thesis materials\data\Ericsson\80GHZ for Mor\E_band\e_band_rx_power';
 
 ericsson_meta = readtable(path_meta);
 ericsson_meta.LinkID = strrep(ericsson_meta.LinkID,'-','_');
@@ -31,7 +31,11 @@ ericsson_db_eband = ericsson_load_raw_data_eband(path_raw_eband);
 save( 'ericsson_db_eband.mat' , 'ericsson_db_eband');
 
 %% load ims data 
-paths = {'data\ims_201801.csv' 'data\ims_201802.csv' 'data\ims_201803.csv' 'data\ims_201804.csv' 'data\ims_201805.csv'};
+paths = {   'C:\Users\mhadar\Documents\personal\thesis materials\data\ims_201801.csv' ...
+            'C:\Users\mhadar\Documents\personal\thesis materials\data\ims_201802.csv' ...
+            'C:\Users\mhadar\Documents\personal\thesis materials\data\ims_201803.csv' ... 
+            'C:\Users\mhadar\Documents\personal\thesis materials\data\ims_201804.csv' ...
+            'C:\Users\mhadar\Documents\personal\thesis materials\data\ims_201805.csv'    };
 stations = ["beit_dagan" , "hafetz_haim" , "nahshon" , "kvotzat_yavne"];
 measurements = ["temperature" ,	"temperature_max" , 	"temperature_min",	"temperature_near_ground",	"rh" ,...
                 "atmospheric_pressure"	,"global_radiation"	,"direct_radiation"	,"diffuse_radiation"	,"rain" ,...
@@ -56,14 +60,14 @@ save('ims_db.mat' , 'ims_db');
 clear paths stations measurements
 %% load gamliel
 %TODO - consider unified with ims
-path = 'data\COPY_Gamliel_08_05_2018.xls';
+path = 'C:\Users\mhadar\Documents\personal\thesis materials\data\COPY_Gamliel_08_05_2018.xls';
 
 gamliel_db = load_gamliel(path);
 save('gamliel.mat' , 'gamliel_db');
 clear path
 
 %% load sunrise/sunset table
-file_path = 'C:\Users\mhadar\Documents\personal\smbit\data\sunrise_sunset.csv';
+file_path = 'C:\Users\mhadar\Documents\personal\thesis materials\data\sunrise_sunset.csv';
 
 suntime_db = load_sunrise_sunset (file_path);
 save( 'suntime_db.mat' , 'suntime_db');
