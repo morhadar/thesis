@@ -1,6 +1,6 @@
 %% load smbit data
-db_path = 'C:\Users\mhadar\Documents\personal\thesis materials\data\smbit\packet1\';
-db_path2 = 'C:\Users\mhadar\Documents\personal\thesis materials\data\smbit\packet2\';
+db_path = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\packet1\';
+db_path2 = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\packet2\';
 
 variables_names = ...
 ["RSSI Avarage"  , "CinrAVG"     , "Modulation"  , "Radio Throughput" ; 
@@ -10,19 +10,22 @@ variables_names = ...
 meta_data = readtable('meta_data.xlsx', 'ReadVariableNames', true , 'ReadRowNames',true );
 meta_data = DMS2DD(meta_data);
 
-db1 = smbit_load_rssi_data_type1(meta_data , db_path , variables_names);
-db2 = smbit_load_rssi_data_type2(meta_data , db_path2, variables_names);
-db = unify_db(meta_data, db1 , db2,variables_names);
+db1 = load_smbit_rssi_data_type1(meta_data , db_path , variables_names);
+db2 = load_smbit_rssi_data_type2(meta_data , db_path2, variables_names);
+db = unify_db(meta_data, db1 , db2, variables_names);
 
-db_t = convert_minus128_to_nan(meta_data,db);
+db = convert_minus128_to_nan(meta_data,db); %TODO - are there any other error types. 
+
 save('meta_data.mat', 'meta_data');
-save('db.mat', 'db' , 'db1' , 'db2' );    
+save('db.mat', 'db' , 'db1' , 'db2' );
+
+clear db_path db_path2 variables_names 
 
 %% load erricson data
-path_meta = 'C:\Users\mhadar\Documents\personal\thesis materials\data\Ericsson\Metadata_2015_2017_2018\mw_meta_20170105_1455.csv';
-path_raw = 'C:\Users\mhadar\Documents\personal\thesis materials\data\Ericsson\Rawdata_2017';
-path_raw_eband = 'C:\Users\mhadar\Documents\personal\thesis materials\data\Ericsson\80GHZ for Mor\E_band\e_band_rx_power';
-
+path_meta = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\Ericsson\Metadata_2015_2017_2018\mw_meta_20170105_1455.csv';
+path_raw = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\Ericsson\Rawdata_2017';
+path_raw_eband = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\Ericsson\80GHZ for Mor\E_band\e_band_rx_power';
+%TODO - verift time are standart time (otherwise -fix)!!!!!!!!!!!!!!!!!
 ericsson_meta = readtable(path_meta);
 ericsson_meta.LinkID = strrep(ericsson_meta.LinkID,'-','_');
 ericsson_db = ericsson_load_raw_data(ericsson_meta , path_raw);
@@ -31,11 +34,12 @@ ericsson_db_eband = ericsson_load_raw_data_eband(path_raw_eband);
 save( 'ericsson_db_eband.mat' , 'ericsson_db_eband');
 
 %% load ims data 
-paths = {   'C:\Users\mhadar\Documents\personal\thesis materials\data\ims_201801.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis materials\data\ims_201802.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis materials\data\ims_201803.csv' ... 
-            'C:\Users\mhadar\Documents\personal\thesis materials\data\ims_201804.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis materials\data\ims_201805.csv'    };
+paths = {   'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims_201801.csv' ...
+            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims_201802.csv' ...
+            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims_201803.csv' ... 
+            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims_201804.csv' ...
+            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims_201805.csv' ...
+            };
 stations = ["beit_dagan" , "hafetz_haim" , "nahshon" , "kvotzat_yavne"];
 measurements = ["temperature" ,	"temperature_max" , 	"temperature_min",	"temperature_near_ground",	"rh" ,...
                 "atmospheric_pressure"	,"global_radiation"	,"direct_radiation"	,"diffuse_radiation"	,"rain" ,...
@@ -57,18 +61,19 @@ for i = 2:5%:length(paths)
 end
 
 save('ims_db.mat' , 'ims_db');
-clear paths stations measurements
+clear paths stations measurements path
 %% load gamliel
 %TODO - consider unified with ims
-path = 'C:\Users\mhadar\Documents\personal\thesis materials\data\COPY_Gamliel_08_05_2018.xls';
-
+path = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\COPY_Gamliel_08_05_2018.xls';
+%TODO - verift time are standart time (otherwise -fix)!!!!!!!!!!!!!!!!!
 gamliel_db = load_gamliel(path);
 save('gamliel.mat' , 'gamliel_db');
 clear path
 
 %% load sunrise/sunset table
-file_path = 'C:\Users\mhadar\Documents\personal\thesis materials\data\sunrise_sunset.csv';
-
+file_path = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\sunrise_sunset.csv';
+%TODO - verift time are standart time (otherwise -fix)!!!!!!!!!!!!!!!!!
+%TODO - take from the new website i have found! 
 suntime_db = load_sunrise_sunset (file_path);
 save( 'suntime_db.mat' , 'suntime_db');
 clear file_path;

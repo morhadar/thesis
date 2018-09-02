@@ -84,37 +84,29 @@ end
 plot_google_map
 
 %% AVG RSSI - during dry period
-ds = datetime(2018,03,01,00,00,00); de = datetime(2018,03,15,23,00,00);
-for i = 1:length(meta_data.link_name)
-    cn = char(meta_data.link_name(i));
-    ind = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
-    db.(cn).avg_rsl = mean(db.(cn).rssi(ind));
-end
-    
+% ds = datetime(2018,03,01,00,00,00); de = datetime(2018,03,15,23,00,00);
+% for i = 1:length(meta_data.link_name)
+%     cn = char(meta_data.link_name(i));
+%     ind = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
+%     db.(cn).avg_rsl_during_dry_period = mean(db.(cn).rssi(ind));
+% end
+%     
 %% AVG RSSI - moving mean/median
 ds = datetime(2018,01,01,00,00,00); de = datetime();
 map = distinguishable_colors(21);
-for hop_num = order_hop_num
-    if ( hop_num == 14 && false) %exclude junc10_to_junc11 
-        continue;
-    end
-    idx = meta_data.hop_num == hop_num;
-    channel_names = meta_data.link_name(idx);
-    %figure
-    for n = 1:length(channel_names)
-        cn = char(channel_names(n));
-        ind = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
-        win_size = (2*60*24)*10; %samples in day * num_of_days.
-        db.(cn).rsl_median = zeros(sum(ind) ,1);
-        db.(cn).rsl_mean = zeros(sum(ind) ,1);
-        db.(cn).rsl_median(ind) = movmedian(db.(cn).rssi(ind), win_size,'omitnan');
-        db.(cn).rsl_mean(ind) = (movmean(db.(cn).rssi(ind), win_size,'omitnan'))'; 
-        %subplot(2,1,n);
-        %hold on; plot( db.(cn).time_rssi(ind) , db.(cn).rssi(ind), 'DisplayName' , 'RSSI' );  
-        %hold on; plot(db.(cn).time_rssi(ind) , db.(cn).rsl_median(ind), 'DisplayName', 'median');
-        %hold on; plot(db.(cn).time_rssi(ind) , db.(cn).rsl_mean(ind), 'DisplayName', 'mean');
-        %title(['hop ' num2str(hop_num) ' -- ' cn ' -- ' num2str(meta_data{(cn),'length_KM'}) 'Km ,']);
-    end
+for i = 1:length(meta_data.link_name)
+    cn = char(meta_data.link_name(i));
+    ind = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
+    win_size = (2*60*24)*10; %samples in day * num_of_days.
+    db.(cn).rsl_median = zeros(sum(ind) ,1);
+    db.(cn).rsl_mean = zeros(sum(ind) ,1);
+    db.(cn).rsl_median(ind) = movmedian(db.(cn).rssi(ind), win_size,'omitnan');
+    db.(cn).rsl_mean(ind) = (movmean(db.(cn).rssi(ind), win_size,'omitnan'))'; 
+    %subplot(2,1,n);
+    %hold on; plot( db.(cn).time_rssi(ind) , db.(cn).rssi(ind), 'DisplayName' , 'RSSI' );  
+    %hold on; plot(db.(cn).time_rssi(ind) , db.(cn).rsl_median(ind), 'DisplayName', 'median');
+    %hold on; plot(db.(cn).time_rssi(ind) , db.(cn).rsl_mean(ind), 'DisplayName', 'mean');
+    %title(['hop ' num2str(hop_num) ' -- ' cn ' -- ' num2str(meta_data{(cn),'length_KM'}) 'Km ,']);
 end 
 save('db.mat', 'db' , '-append');
 clear ds de
@@ -122,7 +114,7 @@ clear ds de
 for i = 1:length(meta_data.link_name)
     cn = char(meta_data.link_name(i));
     N = length(db.(cn).rssi);
-    db.(cn).variance =  1/N * sum( (db.(cn).rssi - db.(cn).rsl_median).^2 );
+    db.(cn).variance =  1/N * sum( (db.(cn).rssi - db.(cn).rsl_median).^2 , 'omitnan' );
     db.(cn).standart_deviation = sqrt(db.(cn).variance);
 end
 save('db.mat', 'db' , '-append' );

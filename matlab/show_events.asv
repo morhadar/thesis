@@ -28,12 +28,12 @@ end
 
 %% choose hops
 switch (4)
-    case 0;     hops = (unique(meta_data.hop_num, 'stable'))';     %by length decending   
-    case 1;     hops = [5 2 4 7 8 9 10 11 19 21 6  15 20 17 18];   %partial north to south   
-    case 2;     hops = [2 1 20 17 18];                             %partial west to east
-    case 3;     hops = [ 18 , 7 ,10 ,5  ,16];                      %periodicity
-    case 4;     hops = [ 5 ];                                      %link specific
-    case 5;     hops = [1];                                        %links cant see first peak of februar rain.      
+    case 0;     ordehop_num = (unique(meta_data.hop_num, 'stable'))';     %by length decending   
+    case 1;     order_hop_num = [5 2 4 7 8 9 10 11 19 21 6  15 20 17 18];   %partial north to south   
+    case 2;     order_hop_num = [2 1 20 17 18];                             %partial west to east
+    case 3;     order_hop_num = [ 18 , 7 ,10 ,5  ,16];                      %periodicity
+    case 4;     order_hop_num = [ 5 ];                                      %link specific
+    case 5;     order_hop_num = [1];                                        %links cant see first peak of februar rain.      
 end
 
 %% plot attenuation of hops: 
@@ -41,7 +41,7 @@ end
 figure;
 bias = 0;
 map = distinguishable_colors(21);
-for i = hops
+for i = order_hop_num
     if ( i == 14 && true) %exclude junc10_to_junc11 
         continue;
     end
@@ -79,7 +79,7 @@ hold on; plot( gamliel_db.time(ind) , gamliel_db.rain(ind) *6 , 'DisplayName' , 
 hold on; plot( ds:seconds(30):de , 0.4*ones(size(ds:seconds(30):de)) , 'DisplayName' , 'lowerbound', 'color' , 'r', 'LineWidth', 2);
 hold on; plot( ds:seconds(30):de , 40*ones(size(ds:seconds(30):de)) , 'DisplayName' , 'upperbound', 'color' , 'g', 'LineWidth' ,2);
 if(true) % add minimal threshold for specific links
-    for i = hops
+    for i = order_hop_num
         idx = meta_data.hop_num == i;
         idx = find(idx,1);
         hold on; plot( ds:seconds(30):de , meta_data.minimal_rain_rate(idx)*ones(size(ds:seconds(30):de)) , 'DisplayName' , ['hop ' num2str(i) ' boundary'], 'color' , 'k');
@@ -103,7 +103,7 @@ title('temperture'); xlabel('date and time'); ylabel('Celsius');
 %% plot 2 channels of the same link + ims data
 
 map = distinguishable_colors(21);
-for i = hops
+for i = order_hop_num
     if ( i == 14 && true) %exclude junc10_to_junc11 
         continue;
     end
@@ -142,7 +142,7 @@ end
 
 bias = 0;
 map = distinguishable_colors(21);
-for i = hops
+for i = order_hop_num
     if ( i == 14 && false) %exclude junc10_to_junc11 
         continue;
     end

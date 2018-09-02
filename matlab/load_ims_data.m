@@ -11,6 +11,7 @@ for i= 1:length(stations)
     time = datetime(table.hour_LST(idx) ,'InputFormat' , 'HH:mm');
     date_time = date + timeofday(time);
     date_time.Format = 'dd.MM.yyyy HH:mm:ss';
+    %date_time.TimeZone = '+02:00';
     ims_db.(stations(i)).time =[  ims_db.(stations(i)).time   ;   date_time   ];
     for j = 1:length(measurements)
         field = char(measurements(j));

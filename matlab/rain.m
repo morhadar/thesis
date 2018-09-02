@@ -1,5 +1,5 @@
 %% init precipitation vector
-for hop_num = order_hop_num
+for hop_num = hops
     idx = meta_data.hop_num == hop_num;
     channel_names = meta_data.link_name(idx);
     for n = 1:length(channel_names)
@@ -16,7 +16,7 @@ map = distinguishable_colors(21);
 f1 = figure('Name', 'Accumulated Rain');
 f2 = figure('Name', 'Rain Rate');
 
-for hop_num = order_hop_num
+for hop_num = hops
     if ( hop_num == 14 && true) %exclude junc10_to_junc11 
         continue;
     end
@@ -24,7 +24,7 @@ for hop_num = order_hop_num
     channel_names = meta_data.link_name(idx);
     L = meta_data.length_KM(idx); L = L(1);
     min_rain_rate = meta_data.minimal_rain_rate(idx); min_rain_rate = min_rain_rate(1);
-    
+    %TODO - consider add 'omitnana' so sum functions.!!!!!!!!!!!!
     for n = 1:length(channel_names)
         cn = char(channel_names(n));
         ind = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
@@ -65,7 +65,7 @@ end
 %% plot rain estimation with rain gauges and minimal rain constraint
 map = distinguishable_colors(21);
 figure;
-for hop_num = order_hop_num
+for hop_num = hops
     if ( hop_num == 14 && true) %exclude junc10_to_junc11 
         continue;
     end

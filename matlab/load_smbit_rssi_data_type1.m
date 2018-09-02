@@ -1,4 +1,4 @@
-function db = smbit_load_rssi_data_type1(meta_data , db_path,variables_names)
+function db = load_smbit_rssi_data_type1(meta_data , db_path,variables_names)
 single_time_first_half_min = 1; %if there is only one single sample at specific minute then put it in the first half minute rather than the second half.
 how_to_handle_missing_data = 0; %0-do nothing, 1-NAN, 2-linear interpolation. %TODO - add functonality
 

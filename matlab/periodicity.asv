@@ -8,9 +8,6 @@ for hop_num = hops
     end
     idx = meta_data.hop_num == hop_num;
     channel_names = meta_data.link_name(idx);
-    f1 = figure('Name', 'hour of min/max');
-    f2 = figure('Name', 'RSL of min/max');
-    f3 = figure('Name', 'variation size of min/max');
     for n = 1:length(channel_names)
         cn = char(channel_names(n));
         ind_period = db.(cn).time_rssi > ds & db.(cn).time_rssi < de;
@@ -30,7 +27,7 @@ for hop_num = hops
         max_rssi = nan(num_of_days , 1);
         min_rssi = nan(num_of_days , 1);
         max_variations = nan(num_of_days , 1);
-        min_variations = nan(num_of_days , 1);
+        min_delta = nan(num_of_days , 1);
         
         for i = 1:num_of_days
             day(i) = time_rssi_period(first_apperance_of_each_day(i));
@@ -40,38 +37,36 @@ for hop_num = hops
             avg_cur_day = avg_period(ind_cur_day);
             
             [max_val,index_max] = max(rssi_cur_day);
-            max_delta = max_val - avg_cur_day(index_max) ;
-            if (    max_delta > 0.5*SD     &&   max_delta < 5*SD    ) 
+            [min_val,index_min] = min(rssi_cur_day);
+            max_delta(i) = max_val - avg_cur_day(index_max) ;
+            min_delta(i) = avg_cur_day(index_min) - min_val  ;
+            if (    max_delta(i) > 0.5*SD     &&   max_delta(i) < 5*SD    ) 
                 max_rssi(i) = max_val;
                 time_in_day_where_max_appears(i) = hours(timeofday(time_rssi_cur_day(index_max)));
-                max_variations(i) = max_delta;
+                max_delta
+            else
+                max_rssi(i) = nan;
+                time_in_day_where_max_appears(i) = nan;
             end
-            
-            [min_val,index_min] = min(rssi_cur_day);
-            min_delta = avg_cur_day(index_min) - min_val  ;
-            if(     min_delta > 0.5*SD       &&      min_delta < 2.5*SD )
-                min_rssi(i) = min_val;
+
+            if(     min_delta(i) > 0.5*SD       &&      min_delta(i) < 2.5*SD )
                 time_in_day_where_min_appears(i) = hours(timeofday(time_rssi_cur_day(index_min)));
-                min_variations(i) = min_delta;
+            else
+                min_rssi(i) = nan;
+                time_in_day_where_min_appears(i) = nan;
             end  
         end
         
-        figure(f1);
-        plot(day, time_in_day_where_max_appears , '*' , 'DisplayName', 'max' ); hold on;
-        plot(day, time_in_day_where_min_appears , '*',  'DisplayName', 'min' );
-        xlabel('date'); ylabel('hour in day');
+        figure;
+        plot(day, time_in_day_where_max_appears , '*' , 'DisplayName', 'max' , 'color' , map(n,:)); hold on;
+        plot(day, time_in_day_where_min_appears , '*',  'DisplayName', 'min' , 'color' , map(n+2,:));
+        xlabel('date'); ylabel('hour in day')';
         title(['hop ' num2str(hop_num) ' -- ' cn]);
         
-        figure(f2); 
-        plot(day, max_rssi, 'DisplayName', 'max' ); hold on;
-        plot(day, min_rssi ,  'DisplayName', 'min');
-        xlabel('date'); ylabel('hour in day');
-        title(['hop ' num2str(hop_num) ' -- ' cn]);
-        
-        figure(f3); 
-        plot(day, max_variations, 'DisplayName', 'max' ); hold on;
-        plot(day, min_variations ,  'DisplayName', 'min');
-        xlabel('date'); ylabel('hour in day');
+        figure; 
+        plot(day, max_rssi, 'DisplayName', 'max' , 'color' , map(n,:)); hold on;
+        plot(day, min_rssi ,  'DisplayName', 'min' , 'color' , map(n+2,:));
+        xlabel('date'); ylabel('hour in day')';
         title(['hop ' num2str(hop_num) ' -- ' cn]);
     end
 end
