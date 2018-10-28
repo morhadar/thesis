@@ -11,7 +11,7 @@ for hop_num = hops
 end 
 
 %% estimate percipitation
-map = distinguishable_colors(21);
+map = distinguishable_colors(24);
 
 f1 = figure('Name', 'Accumulated Rain');
 f2 = figure('Name', 'Rain Rate');
@@ -24,23 +24,24 @@ for hop_num = hops
     channel_names = meta_data.link_name(idx);
     L = meta_data.length_KM(idx); L = L(1);
     min_rain_rate = meta_data.minimal_rain_rate(idx); min_rain_rate = min_rain_rate(1);
-    %TODO - consider add 'omitnana' so sum functions.!!!!!!!!!!!!
-    for n = 1:length(channel_names)
+    %TODO - consider add 'omitnan' so sum functions.!!!!!!!!!!!!
+    for n = 1:size(channel_names,1)
         cn = char(channel_names(n));
         ind = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
-        if (sum(ind) ==0 )
+        if (sum(ind) == 0 )
             disp( ['hop ' num2str(hop_num) ' link' num2str(n) ' is not available']);
         end
         a = db.(cn).rssi(ind);
-        a_norm = ( db.(cn).rsl_median(ind) - a )./L;
+        a_norm = ( -38 - a )./L; %TODO - tmp!!!!!
+        %a_norm = ( db.(cn).rsl_median(ind) - a )./L;
         a_norm( a_norm<0 ) = nan;
         db.(cn).rain(ind) = nthroot(a_norm./alpha,beta )./120 ;
-        db.(cn).p_accum(ind) = cumsum(db.(cn).rain(ind) );
+        db.(cn).p_accum(ind) = cumsum(db.(cn).rain(ind),  'omitnan' );
         figure(f1);
         hold on; plot( db.(cn).time_rssi(ind) , db.(cn).p_accum(ind), 'DisplayName' , [ 'hop ' num2str(hop_num) ' - ' num2str(meta_data{(cn),'length_KM'}) 'Km ,'] , 'color' , map(hop_num,:));  
         %title(['hop ' num2str(hop_num) ' -- ' cn ' -- ' num2str(meta_data{(cn),'length_KM'}) 'Km ,']);
         
-        figure(f2); hold on; plot( db.(cn).time_rssi(ind) , db.(cn).rain(ind), 'DisplayName' , [ 'hop ' num2str(hop_num) ' - ' num2str(meta_data{(cn),'length_KM'}) 'Km ,'] , 'color' , map(hop_num,:));  
+        figure(f2); hold on; plot( db.(cn).time_rssi(ind) , db.(cn).rain(ind)*120, 'DisplayName' , [ 'hop ' num2str(hop_num) ' - ' num2str(meta_data{(cn),'length_KM'}) 'Km ,'] , 'color' , map(hop_num,:));  
         figure(f2); hold on; plot( ds:seconds(30):de , min_rain_rate*ones(size(ds:seconds(30):de)) , 'DisplayName' , ['hop ' num2str(hop_num) ' boundary'], 'color' , map(hop_num,:), 'LineWidth', 2);
         % add rain gauges:
         %ind = ims_db.beit_dagan.time > ds & ims_db.beit_dagan.time<de;
@@ -63,7 +64,7 @@ for i = 1:4
 end
 
 %% plot rain estimation with rain gauges and minimal rain constraint
-map = distinguishable_colors(21);
+map = distinguishable_colors(24);
 figure;
 for hop_num = hops
     if ( hop_num == 14 && true) %exclude junc10_to_junc11 

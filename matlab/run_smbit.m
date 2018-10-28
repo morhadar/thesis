@@ -1,8 +1,9 @@
 clc; clear all;
 %% load data;
 load('meta_data.mat');
-load('db.mat');
+load('db.mat' , 'db');
 load('ims_db.mat');
+load('ims_db_clouds.mat');
 load('gamliel.mat');
 
 % System properties:
@@ -94,7 +95,7 @@ plot_google_map
 %% AVG RSSI - moving mean/median
 ds = datetime(2018,01,01,00,00,00); de = datetime();
 map = distinguishable_colors(21);
-for i = 1:length(meta_data.link_name)
+for i = 1:size(meta_data.link_name,1)
     cn = char(meta_data.link_name(i));
     ind = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
     win_size = (2*60*24)*10; %samples in day * num_of_days.
@@ -111,17 +112,16 @@ end
 save('db.mat', 'db' , '-append');
 clear ds de
 %% calc standart deviation
-for i = 1:length(meta_data.link_name)
+for i = 1:size(meta_data.link_name,1)
     cn = char(meta_data.link_name(i));
     N = length(db.(cn).rssi);
     db.(cn).variance =  1/N * sum( (db.(cn).rssi - db.(cn).rsl_median).^2 , 'omitnan' );
     db.(cn).standart_deviation = sqrt(db.(cn).variance);
 end
-save('db.mat', 'db' , '-append' );
+%save('db.mat', 'db' , '-append' );
 
 %% calc free space path loss 
-d = meta_data.length_KM* 1000; %[m]
-meta_data.fspl = fspl(d , lambda ); %[db]
+meta_data.fspl = fspl(meta_data.length_KM* 1000 , lambda ); %[db]
 
 %Fersnel zone 
 n = 1; 

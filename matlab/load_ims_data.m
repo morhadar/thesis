@@ -1,6 +1,6 @@
 function ims_db = load_ims_data (path, ims_db, stations, measurements)
 
-table = readtable(path, 'TreatAsEmpty',{'-'}  );
+%table = readtable(path, 'TreatAsEmpty',{'-'}  );
 table = readtable(path, 'Format','%s %s %{HH:mm}D %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f %f', 'TreatAsEmpty',{'-'});
 
 for i= 1:length(stations)

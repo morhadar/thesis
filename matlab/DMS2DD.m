@@ -22,6 +22,6 @@ for i=1:size(meta_data,1)  %TODO - do it without a loop
     meta_data.length_KM(i) = distance(tx,rx, 'geodesic')/1000;
 end
 
-meta_data = sortrows(meta_data, 'length_KM', 'descend');
+%meta_data = sortrows(meta_data, 'length_KM', 'descend');
 
 end
