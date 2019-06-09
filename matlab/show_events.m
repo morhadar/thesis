@@ -1,6 +1,6 @@
 
 %% choose dates
-switch (0)
+switch (2.1)
     case 0;     ds = datetime(2018,01,01,00,00,00); de = datetime();                        %all period
     case 0.1;   ds = datetime(2018,02,15,00,00,00); de = datetime(2018,03,20,00,00,00);     %data1
     case 0.2;   ds = datetime(2018,03,19,11,00,00); de = datetime(2018,05,03,23,59,59);     %data2
@@ -21,88 +21,112 @@ switch (0)
     case 1.61;  ds = datetime(2018,06,12,00,00,00); de = datetime(2018,06,12,23,59,59);     %June, 12
     case 1.62;  ds = datetime(2018,06,13,00,00,00); de = datetime(2018,06,13,23,59,59);     %June, 13 
     case 1.9;   ds = datetime(2018,09,08,00,00,00); de = datetime(2018,09,08,23,59,59);     %September, 8
+    case 1.10;  ds = datetime(2018,10,25,00,00,00); de = datetime(2018,10,26,23,59,59);     %October, 25
+
     
-    case 2;     ds = datetime(2018,03,03,00,00,00); de = datetime(2018,03,17,00,00,00);     %dry March
-    case 2.1;   ds = datetime(2018,04,01,00,00,00); de = datetime(2018,05,05,00,00,00);     %dry April-May   
-    case 2.2;   ds = datetime(2018,02,28,00,00,00); de = datetime(2018,03,14,00,00,00);     %dry
-    case 2.3;   ds = datetime(2018,09,11,00,00,00); de = datetime(2018,09,25,00,00,00);     %dry september + yum kipur
+    case 2.1;   ds = datetime(2018,03,03,00,00,00); de = datetime(2018,03,17,00,00,00);     %dry March
+    case 2.2;   ds = datetime(2018,04,01,00,00,00); de = datetime(2018,05,05,00,00,00);     %dry April-May   
+    case 2.3;   ds = datetime(2018,02,28,00,00,00); de = datetime(2018,03,14,00,00,00);     %dry
+    case 2.4;   ds = datetime(2018,09,11,00,00,00); de = datetime(2018,09,25,00,00,00);     %dry september + yum kipur
          
-    case 3 ;    ds = datetime(2018,03,05,00,00,00); de = datetime(2018,03,07,23,59,59);     %24h *3 
-    case 3.1;   ds = datetime(2018,03,19,00,00,00); de = datetime(2018,03,20,23,59,59);     %weird event - link11    
-    case 3.2;   ds = datetime(2018,02,22,00,00,00); de = datetime(2018,02,23,00,00,00);     %weird event 
-    case 3.3;   ds = datetime(2018,03,21,00,00,00); de = datetime(2018,03,26,23,59,59);     %periodicity 
-    case 3.4;   ds = datetime(2018,03,21,00,00,00); de = datetime(2018,03,24,23,59,59);     %summer clock
+    case 3.1 ;  ds = datetime(2018,03,05,00,00,00); de = datetime(2018,03,07,23,59,59);     %24h *3 
+    case 3.2;   ds = datetime(2018,03,19,00,00,00); de = datetime(2018,03,20,23,59,59);     %weird event - link11    
+    case 3.3;   ds = datetime(2018,02,22,00,00,00); de = datetime(2018,02,23,00,00,00);     %weird event 
+    case 3.4;   ds = datetime(2018,03,21,00,00,00); de = datetime(2018,03,26,23,59,59);     %periodicity 
+    case 3.5;   ds = datetime(2018,03,21,00,00,00); de = datetime(2018,03,24,23,59,59);     %summer clock
+    case 3.6;   ds = datetime(2018,05,27,10,20,00); de = datetime(2018,05,27,17,25,00);     %hop7 (and more) break down
         
-    case 11;    ds = datetime(2018,01,01,00,00,00); de = datetime(2018,01,31,23,59,59);
-    case 22;    ds = datetime(2018,02,01,00,00,00); de = datetime(2018,02,28,23,59,59);
-    case 33;    ds = datetime(2018,03,01,00,00,00); de = datetime(2018,03,31,23,59,59);
-    case 44;    ds = datetime(2018,04,01,00,00,00); de = datetime(2018,04,30,23,59,59);
-    case 55;    ds = datetime(2018,05,01,00,00,00); de = datetime(2018,05,31,23,59,59);
-    case 66;    ds = datetime(2018,06,01,00,00,00); de = datetime(2018,06,30,23,59,59);
+    case 1;    ds = datetime(2018,01,01,00,00,00); de = datetime(2018,01,31,23,59,59);
+    case 11;   ds = datetime(2018,01,01,00,00,00); de = datetime(2018,01,31,23,59,59);
+    case 2;    ds = datetime(2018,02,01,00,00,00); de = datetime(2018,02,28,23,59,59);
+    case 3;    ds = datetime(2018,03,01,00,00,00); de = datetime(2018,03,31,23,59,59);
+    case 33;    ds = datetime(2018,03,03,00,00,00); de = datetime(2018,03,17,00,00,00);
+    case 4;    ds = datetime(2018,04,01,00,00,00); de = datetime(2018,04,30,23,59,59);
+    case 44;    ds = datetime(2018,04,12,00,00,00); de = datetime(2018,04,20,23,59,59);
+    case 5;    ds = datetime(2018,05,01,00,00,00); de = datetime(2018,05,31,23,59,59);
+    case 55;    ds = datetime(2018,05,14,00,00,00); de = datetime(2018,05,31,23,59,59);
+    case 6;    ds = datetime(2018,06,01,00,00,00); de = datetime(2018,06,30,23,59,59);
+    case 66;    ds = datetime(2018,06,15,00,00,00); de = datetime(2018,06,30,23,59,59);
+    case 7;    ds = datetime(2018,07,01,00,00,00); de = datetime(2018,07,31,23,59,59);
     case 77;    ds = datetime(2018,07,01,00,00,00); de = datetime(2018,07,31,23,59,59);
-    case 88;    ds = datetime(2018,08,01,00,00,00); de = datetime(2018,08,31,23,59,59);
-    case 99;    ds = datetime(2018,09,01,00,00,00); de = datetime(2018,09,30,23,59,59);
+    case 8;    ds = datetime(2018,08,01,00,00,00); de = datetime(2018,08,31,23,59,59);
+    case 88;    ds = datetime(2018,08,01,00,00,00); de = datetime(2018,08,26,23,59,59);
+    case 9;    ds = datetime(2018,09,01,00,00,00); de = datetime(2018,09,30,23,59,59);
+    case 99;    ds = datetime(2018,09,09,00,00,00); de = datetime(2018,09,30,23,59,59);
+    case 10;   ds = datetime(2018,10,01,00,00,00); de = datetime(2018,10,31,23,59,59);
+    case 1010;  ds = datetime(2018,10,01,00,00,00); de = datetime(2018,10,17,23,59,59);
+    case 11;   ds = datetime(2018,11,01,00,00,00); de = datetime(2018,11,30,23,59,59);
+    case 1111;  ds = datetime(2018,11,01,00,00,00); de = datetime(2018,11,30,23,59,59);
+    case 12;   ds = datetime(2018,12,01,00,00,00); de = datetime(2018,12,31,23,59,59);
+    case 1212;  ds = datetime(2018,12,09,00,00,00); de = datetime(2018,12,17,17,00,00);
+    case 201902;  ds = datetime(2019,02,01,00,00,00); de = datetime(2019,02,28,23,59,59);
+
 end
 
 %% choose hops
-switch (3.3)
-    case 0;     hops = (unique(meta_data.hop_num, 'stable'))';     %by length ascending    
+switch (0)
+    case 0;     hops = (unique(meta_data.hop_num, 'stable'))';  hops(hops==14) = [];   %by length ascending    
     case 1;     hops = [5 2 4 7 8 9 10 11 19 21 6  15 20 17 18];   %partial north to south   
+    case 1.2;   hops = [5 2 3 4 1 7 8 9 10 11 19 21 14 6 22 23 15 24 20 17 12 13 16 18];  %north to south
     case 2;     hops = [2 1 20 17 18];                             %partial west to east
     case 3;     hops = [17 7 22 8 10 5 15 16 3 19 11 9];           %periodicity  - length ascending
     case 3.1;   hops = [1 13 23 12 18 24 2 20 4 6 21 ];            %periodicity (weak) - length ascending
     case 3.2;   hops = [7 5 15 16];            %periodicity (very visible!!!) - length ascending
-    case 3.3;   hops = [7 5];            %periodicity (very visible!!!) - length ascending
-    case 4;     hops = [ 1, 2, 3, 4,5 ,6 ,7 ,12 ,16  ];            %links cant see first peak of februar rain.   
-    case 5;     hops = [5];                                           
+    case 3.3;   hops = [5 7];            %periodicity (very visible!!!) - length ascending
+    case 4;     hops = [1, 2, 3, 4,5 ,6 ,7 ,12 ,16  ];            %links cant see first peak of februar rain.   
+    case 5;     hops = [5]; 
+    case 6;     hops = [15 16 5 10 8];
+    case 7;     hops = [24 25 26 27 28 29];
+    case 8;     hops = [1 23 6 18];
 end
 
 %% plot attenuation of hops: 
-
-figure;
 bias = 0;
-map = distinguishable_colors(24);
+map = distinguishable_colors(35);
+nn=1;
+figure;
 for i = hops
-    if ( i == 14 && true) %exclude junc10_to_junc11 
-        continue;
-    end
     idx = meta_data.hop_num == i;
     channel_names = meta_data.link_name(idx);
+    %subplot(length(hops)+1,1,nn);
+    nn = nn+1;
+    %yyaxis left
     for n = 1:size(channel_names,1)
         cn = char(channel_names(n));
+        if (~isfield(db ,cn))
+            continue;
+        end
+        if( isempty(db.(cn).time_rssi) )
+            continue;
+        end
         ind_period = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
-        hold on;
-        A = (db.(cn).rssi(ind_period) - db.(cn).rsl_median(ind_period));
-        A = conv(A, ones(1,20)/20 , 'same');
+        if ( ~any(ind_period))
+            continue;
+        end
+        A = db.(cn).rssi(ind_period);
+        %A = (db.(cn).rssi(ind_period) - db.(cn).rsl_median(ind_period));
+        %A = conv(A, ones(1,20)/20 , 'same');
         %A = conv( A , [0, 1 -1] , 'same');
         %A = A/meta_data{cn, 'length_KM'}; % normalize dm to dbm.
-        bias = bias +5;
-        subplot(2,1,1);
-        hold on; plot( db.(cn).time_rssi(ind_period) , A - bias, 'DisplayName', ['hop' num2str(i), ' link' num2str(n)] , 'color', map(i,:)) ;
+        %subplot(2,1,1);
+        hold on; plot( db.(cn).time_rssi(ind_period) , A - bias,'.', 'DisplayName', ['hop' num2str(i), ' link' num2str(n)] , 'color', map(i,:)) ;
         title([ char(ds) ' - ' char(de)]);
+        bias = bias +20;
     end
+    
 end
 
 %add ims data in subplot
-% % subplot(2,1,2);
-% % hold on; plot( ims_db_clouds.beit_dagan_m.time(ind_period) , ims_db_clouds.beit_dagan_m.height_lower_clouds(ind_period) ,'*', 'DisplayName' , 'height lower clouds' );
-% % hold on; plot( ims_db_clouds.beit_dagan_m.time(ind_period) , ims_db_clouds.beit_dagan_m.type_lower_clouds(ind_period) ,'*', 'DisplayName' , 'type lower clouds' );
-% % hold on; plot( ims_db.beit_dagan.time(ind_period) , ims_db.beit_dagan.wind_speed(ind_period), 'DisplayName' , 'wind speed' );
-subplot(2,1,2);
-ind_period = ims_db.beit_dagan.time > ds & ims_db.beit_dagan.time < de;
-hold on; plot( ims_db.beit_dagan.time(ind_period) ,ims_db.beit_dagan.temperature(ind_period) , 'DisplayName' , 'temparature' );
-hold on; plot( ims_db.beit_dagan.time(ind_period) ,ims_db.beit_dagan.temperature_near_ground(ind_period) , 'DisplayName' , 'temperature near ground' );
-hold on; plot( ims_db.beit_dagan.time(ind_period) , ims_db.beit_dagan.wind_speed(ind_period) ,'*', 'DisplayName' , 'wind speed' );
-hold on; plot( ims_db.beit_dagan.time(ind_period) ,ims_db.beit_dagan.temperature_near_ground(ind_period) - ims_db.beit_dagan.temperature(ind_period) , 'DisplayName' , 'diff' );
+%******** automatic measurments********** 
+%subplot(5,1,5);
+% yyaxis right
+% ind_period = ims_db.beit_dagan.time > ds & ims_db.beit_dagan.time < de;
+% hold on; plot( ims_db.beit_dagan.time(ind_period) ,ims_db.beit_dagan.rh(ind_period) , 'DisplayName' , 'rh' );
 
-%hold on; plot( ims_db.beit_dagan.time(ind_period) , ims_db.beit_dagan.wind_direction(ind_period) ,'*', 'DisplayName' , 'wind direction' );
-hold on; plot( ims_db.beit_dagan.time(ind_period) , ims_db.beit_dagan.rh(ind_period) ,'*', 'DisplayName' , 'rh' );
-
-
-ind_period = ims_db_clouds.beit_dagan_m.time > ds & ims_db_clouds.beit_dagan_m.time<de;
-hold on; plot( ims_db_clouds.beit_dagan_m.time(ind_period) , ims_db_clouds.beit_dagan_m.total_clouds(ind_period) ,'*', 'DisplayName' , 'Total clouds' );
-hold on; plot( ims_db_clouds.beit_dagan_m.time(ind_period) , ims_db_clouds.beit_dagan_m.total_lower_clouds(ind_period) ,'*',  'DisplayName' , 'Total lower clouds' );
-
+%human measurments!!!!
+% subplot(2,1,2);
+% ind_period = ims_db_clouds.beit_dagan_m.time > ds & ims_db_clouds.beit_dagan_m.time<de;
+% hold on; plot( ims_db_clouds.beit_dagan_m.time(ind_period) ,ims_db_clouds.beit_dagan_m.(ind_period), 'DisplayName' , 'atmospheric_pressure');
 
 %% plot rain gaues 
 stations = ["beit_dagan" , "hafetz_haim" , "nahshon" , "kvotzat_yavne"];

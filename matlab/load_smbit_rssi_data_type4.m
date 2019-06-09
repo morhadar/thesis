@@ -1,4 +1,4 @@
-function db = load_smbit_rssi_data_type3(meta_data , db, db_path3, months)
+function db = load_smbit_rssi_data_type4(meta_data , hop_link_mapping , db, db_path3, months)
 
 for m = 1:length(months)
     mon = months(m); mon=mon{1};
@@ -15,30 +15,28 @@ for m = 1:length(months)
         str = char(strrep(str ,"'", '"')) ;
         json_str = jsondecode(str);
         for j = 1:length(json_str)
-            link_name = json_str(j).name;
+            link_name_in_file = json_str(j).name;
             item_id = str2double( json_str(j).siklu_rssavg.itemid);
             
             %check that link_name in json exist also in meta data
             %check that idem_id in json is identical to the one in meta_data.
-            if( ~ismember(link_name, meta_data.Properties.RowNames))
-                disp(['new link - ' link_name ', Item ID: ' num2str(item_id)  ]);
+            ind_link = strcmp(link_name_in_file, hop_link_mapping.link_name);
+            ind_id = item_id == hop_link_mapping.item_id;
+            if( sum(ind_link) ~=1 | sum(ind_id) ~=1 |  ~isequal(ind_link,ind_id) )
+                disp(['new link or item_id - ' link_name_in_file ', Item ID: ' num2str(item_id)  ]);
                 disp(fullfile( files(i).folder , files(i).name));
+                %TODO - keep parsing instead of return
                 return
             end
-            if ( meta_data{link_name , 'item_id'} ~= item_id)
-                disp(['item ID is different from the the existing one - ' fullfile( files(i).folder , files(i).name)]);
-                disp(link_name); disp(item_id)
-            end
+            hop_name = char(hop_link_mapping.hop_name(link_name_in_file));
+            link_direction = char(hop_link_mapping.link_direction(link_name_in_file));
             
             epoch_time = str2double(json_str(j).siklu_rssavg.lastclock);
             if(epoch_time ==0)
                 continue;
             end
-            time = datetime( epoch_time , 'convertfrom','posixtime') + hours(2);
-            time.Format = 'dd.MM.yyyy HH:mm:ss';
             rssi = str2double(json_str(j).siklu_rssavg.lastvalue);
-            db.(link_name).time_rssi = [db.(link_name).time_rssi ; time];
-            db.(link_name).rssi =  [db.(link_name).rssi ; rssi];
+            db.(hop_name).(link_direction).raw = [db.(hop_name).(link_direction).raw ; epoch_time rssi];
         end
         fclose(fid);
     end

@@ -8,14 +8,15 @@ ericsson_db_eband.rssi= [];
 ericsson_db_eband.volt = [];
 
 
-for n = 1:810%length(txt_files)
+for n = 1:979%length(txt_files)
     if (n==22 || n==35 || n==91 || n==104 || n==201|| n==282 || n==314 || ...
             n==380 || n==381 || n==417 || n==536 || n==639 || n==688 || n==699 ||...
-            n==706 || n==714 || n==795 || n==810) 
+            n==706 || n==714 || n==795 || n==810 || n==811 || n==837 || n==883 || ...
+            n==894 || n==899 || n==928 || n==970 || n==979) %TODO - can't read certain files due to parsing problem! 
         continue; 
     end
-    %disp(n);
-    temp = readtable( fullfile( txt_files(n).folder ,txt_files(n).name), 'TreatAsEmpty',{'-'}, 'Format','%{yyyy-MM-dd HH:mm:ss}D %f %f');  
+    disp(n);
+    temp = readtable( fullfile( txt_files(n).folder ,txt_files(n).name), 'TreatAsEmpty',{'-'}, 'Format','%{yyyy-MM-dd HH:mm:ss}D %f %f' );  
     %time = datetime( temp.Time, 'InputFormat','yyyy-MM-dd HH:mm:ss');
     time = temp.Time;
     time.Format = 'dd.MM.yyyy HH:mm:ss';

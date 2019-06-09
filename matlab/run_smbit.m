@@ -1,11 +1,19 @@
 clc; clear all;
 %% load data;
-load('meta_data.mat');
-load('db.mat' , 'db');
+%load('meta_data.mat');
+%load( 'db_old_data_dont_delete.mat'); %db with old names
+load( 'db.mat'); %in old data i replaced -128 with nan. 
+% db_ceragon = load('ceragon.mat' ); 
+% load( 'ericsson_db');
+% load( 'db_kfar_saba)';
+% load( 'ericsson_januray_horiz_polarization.mat');
+
 load('ims_db.mat');
 load('ims_db_clouds.mat');
 load('gamliel.mat');
+load( 'suntime_db.mat' );
 
+%% parameters
 % System properties:
 frequency = 74.875; %[GHz]
 f_hertz = frequency * 1e9; %[Hz]
@@ -18,7 +26,9 @@ quant = 1; %[db]
 time_quant = 30; %[sec]
 
 % others
-freq24hours = 1/(24*60*60);
+freq24hours = 1/(24*60*60); %Hz
+harmonics = 1:7;
+freq_harmonics = 1./((24./harmonics).*3600);
 T = 20; %[celsious]
 P = 100 *1000; %[Pa]
 W = 7.5; %[g/m^3] water density.
@@ -46,9 +56,9 @@ figure;
 for i = (unique(meta_data.hop_num, 'stable'))'
     idx = meta_data.hop_num == i;
     idx = find(idx,1);
-    length = meta_data.length_KM(idx);
-    A = alpha .* (r .^ beta).* length;
-    hold on; plot(r,A,'DisplayName' , ['hop:' num2str(i) ': ' num2str(length) 'km'] ,'color', map(i,:));
+    L = meta_data.length_KM(idx);
+    A = alpha .* (r .^ beta).* L;
+    hold on; plot(r,A,'DisplayName' , ['hop:' num2str(i) ': ' num2str(L) 'km'] ,'color', map(i,:));
 end
 hold on; plot( r , quant*ones( size(r)  ) , 'color', 'r', 'DisplayName' , '1db');
 xlabel('R [mm/h]'); ylabel('attenuation');
@@ -65,60 +75,65 @@ ylabel('distance required [m]');
 %% calculate minimal rain rate for each link
 r = 0:0.1:100; %[mm/h]. resolution of the imd data is 0.1 therfore it is enought.
 meta_data.minimal_rain_rate = nan( size(meta_data,1) ,1);
-for i = (unique(meta_data.hop_num, 'stable'))'
+for i = 1:24%(unique(meta_data.hop_num, 'stable'))'
     idx = meta_data.hop_num == i;
-    length = meta_data.length_KM(idx); length = length(1); % both channels with the same length
-    A = alpha .* (r .^ beta).* length;
+    L = meta_data.length_KM(idx); L = L(1); % both channels with the same length
+    A = alpha .* (r .^ beta).* L;
     ind = find(A > quant, 1);
     meta_data.minimal_rain_rate(idx) = r(ind)*ones( size(meta_data.minimal_rain_rate(idx)) );
 end
 save('meta_data.mat', 'meta_data');
 
 %% plot links on map
-figure; title('map');
-for i = [1 15, 18] %1:size(meta_data,1)
-   hold on; plot(   [meta_data.transmitter_longitude(i), meta_data.receiver_longitude(i)] ,...
-                    [meta_data.transmitter_latitude(i), meta_data.receiver_latitude(i)], ...
-                    'MarkerSize', 50, 'DisplayName',[num2str(meta_data.length_KM(i)*1000) ' m'] );
-   %legend( [num2str(meta_data.length_KM(i)*1000) ' m']); 
-end
-plot_google_map
-
-%% AVG RSSI - during dry period
-% ds = datetime(2018,03,01,00,00,00); de = datetime(2018,03,15,23,00,00);
-% for i = 1:length(meta_data.link_name)
-%     cn = char(meta_data.link_name(i));
-%     ind = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
-%     db.(cn).avg_rsl_during_dry_period = mean(db.(cn).rssi(ind));
+% figure; title('map');
+% for i = [1 15, 18] %1:size(meta_data,1)
+%    hold on; plot(   [meta_data.transmitter_longitude(i), meta_data.receiver_longitude(i)] ,...
+%                     [meta_data.transmitter_latitude(i), meta_data.receiver_latitude(i)], ...
+%                     'MarkerSize', 50, 'DisplayName',[num2str(meta_data.length_KM(i)*1000) ' m'] );
+%    %legend( [num2str(meta_data.length_KM(i)*1000) ' m']); 
 % end
-%     
-%% AVG RSSI - moving mean/median
-ds = datetime(2018,01,01,00,00,00); de = datetime();
+% plot_google_map
+
+ 
+%% AVG
 map = distinguishable_colors(21);
-for i = 1:size(meta_data.link_name,1)
-    cn = char(meta_data.link_name(i));
-    ind = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
-    win_size = (2*60*24)*10; %samples in day * num_of_days.
-    db.(cn).rsl_median = zeros(sum(ind) ,1);
-    db.(cn).rsl_mean = zeros(sum(ind) ,1);
-    db.(cn).rsl_median(ind) = movmedian(db.(cn).rssi(ind), win_size,'omitnan');
-    db.(cn).rsl_mean(ind) = (movmean(db.(cn).rssi(ind), win_size,'omitnan'))'; 
-    %subplot(2,1,n);
-    %hold on; plot( db.(cn).time_rssi(ind) , db.(cn).rssi(ind), 'DisplayName' , 'RSSI' );  
-    %hold on; plot(db.(cn).time_rssi(ind) , db.(cn).rsl_median(ind), 'DisplayName', 'median');
-    %hold on; plot(db.(cn).time_rssi(ind) , db.(cn).rsl_mean(ind), 'DisplayName', 'mean');
-    %title(['hop ' num2str(hop_num) ' -- ' cn ' -- ' num2str(meta_data{(cn),'length_KM'}) 'Km ,']);
-end 
-save('db.mat', 'db' , '-append');
-clear ds de
-%% calc standart deviation
-for i = 1:size(meta_data.link_name,1)
-    cn = char(meta_data.link_name(i));
-    N = length(db.(cn).rssi);
-    db.(cn).variance =  1/N * sum( (db.(cn).rssi - db.(cn).rsl_median).^2 , 'omitnan' );
-    db.(cn).standart_deviation = sqrt(db.(cn).variance);
+win_size = (2*60*24)*10; %samples in day * num_of_days.
+for i = (unique(meta_data.hop_num, 'stable'))'
+    idx = meta_data.hop_num == i;
+    channel_names = meta_data.link_name(idx);
+    for n = 1:size(channel_names,1)
+        cn = char(channel_names(n));
+        if ( ~isfield(db ,cn) ); continue; end
+        %AVG
+        db.(cn).rsl_median = movmedian(db.(cn).rssi, win_size,'omitnan');
+        db.(cn).rsl_mean = movmean(db.(cn).rssi, win_size,'omitnan');
+        db.(cn).avg = db.(cn).rsl_mean;
+    end
 end
-%save('db.mat', 'db' , '-append' );
+
+%% STD
+for i = (unique(meta_data.hop_num, 'stable'))'
+    idx = meta_data.hop_num == i;
+    channel_names = meta_data.link_name(idx);
+    for n = 1:length(channel_names)
+        cn = char(channel_names(n));
+        if( ~isfield( db, cn)); continue; end
+        %STD
+        N = length(db.(cn).rssi);
+        diff = (db.(cn).rssi - db.(cn).avg);
+        db.(cn).variance =  1/N * sum( diff.^2 , 'omitnan' );
+        db.(cn).std = sqrt(db.(cn).variance);
+        
+        ind_up = diff >= 0;
+        db.(cn).variance_up = 1/length(diff(ind_up))* sum(diff(ind_up).^2 , 'omitnan');
+        db.(cn).std_up = sqrt(db.(cn).variance_up);
+        
+        ind_down = diff <= 0;
+        db.(cn).variance_down = 1/length(diff(ind_down)) * sum( diff(ind_down).^2 , 'omitnan');
+        db.(cn).std_down = sqrt(db.(cn).variance_down);
+    end 
+end
+%save('db.mat', 'db' , '-append');
 
 %% calc free space path loss 
 meta_data.fspl = fspl(meta_data.length_KM* 1000 , lambda ); %[db]
@@ -128,6 +143,15 @@ n = 1;
 %mid_path_radius = 0.5 * sqrt(n*lambda*d) ;
 mid_path_radius = 8.656* sqrt( meta_data.length_KM ./ frequency); %[m]
 
+%% init structs:
+for i = (unique(meta_data.hop_num, 'stable'))'
+    idx = meta_data.hop_num == i;
+    channel_names = meta_data.link_name(idx);
+    for n = 1:length(channel_names)
+        cn = char(channel_names(n));
+        db.(cn).freq_amp = nan(length(harmonics) , 12);
+    end
+end
 
 
 

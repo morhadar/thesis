@@ -1,9 +1,13 @@
 function db = unify_db2 (meta_data, db , db3) 
-redundant_data = 1 ; %0 - combine measurments ( times are not overlapped in seconds). 1 - throw redundant samples from db2. 
 
 for i = 1:length(meta_data.link_name)
     cn = char(meta_data.link_name(i));
     if( isfield(db , cn) )
+        if ( isempty(db.(cn).time_rssi) )
+            db.(cn).time_rssi = db3.(cn).time_rssi;
+            db.(cn).rssi = db3.(cn).rssi;
+            continue;
+        end
         last_t = db.(cn).time_rssi(end);
         if( isempty(db3.(cn).time_rssi) )
             continue;

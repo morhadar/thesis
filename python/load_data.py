@@ -4,15 +4,25 @@ from pathlib import Path
 import json
 import pandas as pd
 import h5py
-from datetime import datetime
+import scipy.io
 
-
-meta_data_file = Path('C:/Users/mhadar/Documents/personal/thesis_materials/data/smbit/meta_data2.csv')
+hop_link_mapping_file = Path('C:/Users/mhadar/Documents/personal/thesis_materials/data/smbit/meta_data_1.xlsx')
+meta_data_file = Path('C:/Users/mhadar/Documents/personal/thesis_materials/data/smbit/meta_data_2.xlsx')
+geo_location_file = Path('C:/Users/mhadar/Documents/personal/thesis_materials/data/smbit/meta_data_3.xlsx')
 db_path3 = Path('../../thesis_materials/data/smbit/packet3_tmp/')
-db_months = ['smbit_2018_05' , 'smbit_2018_06' , 'smbit_2018_07']
-#TODO - read remote files instead.
 
-meta_data = pd.read_csv(meta_data_file)
+hop_link_mapping = pd.read_excel(meta_data_name_hops_mapping_file , sheet_name=0)
+meta_data = pd.read_excel(meta_data_file , sheet_name=0)
+geo_location = pd.read_excel(geo_location_file , sheet_name=0)
+
+f = h5py.File('C:/Users/mhadar/Documents/personal/thesis/matlab/db.h5','a')
+f['muni_leonardo']  
+data = f.get('data/variable1') 
+data = np.array(data) # For converting to numpy array
+for key in f.keys():
+    print(key)
+print(f.keys())
+    
 #TODO -  make it appandable
 f =  h5py.File("t1", "a")
 db3 = {}

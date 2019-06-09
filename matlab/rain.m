@@ -9,7 +9,7 @@ for hop_num = hops
         db.(cn).p_accum = zeros(N,1);
     end
 end 
-
+xcorr
 %% estimate percipitation
 map = distinguishable_colors(24);
 
@@ -21,6 +21,7 @@ for hop_num = hops
         continue;
     end
     idx = meta_data.hop_num == hop_num;
+    
     channel_names = meta_data.link_name(idx);
     L = meta_data.length_KM(idx); L = L(1);
     min_rain_rate = meta_data.minimal_rain_rate(idx); min_rain_rate = min_rain_rate(1);
