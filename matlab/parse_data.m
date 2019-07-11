@@ -1,17 +1,3 @@
-geo_location_file = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\meta_data_3_geo_location.xlsx';
-hop_link_mapping_file = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\meta_data_1.xlsx';
-%hop_link_mapping_file = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\meta_data_hop_link_mapping.xlsx';
-meta_data_file = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\meta_data_2.xlsx';
-
-geo_location = readtable(geo_location_file, 'ReadVariableNames', true  );
-hop_link_mapping = readtable(hop_link_mapping_file, 'ReadVariableNames', true , 'ReadRowNames', true );
-%hop_link_mapping = readtable(hop_link_mapping_file, 'ReadVariableNames', true );
-meta_data = readtable(meta_data_file, 'ReadVariableNames', true , 'ReadRowNames', true );
-
-%TODO - the best thing todo is to add 2 additional colomns to meta_data
-%table with 'other names for up link' and 'other names for down link'
-
-clear geo_location_file hop_link_mapping_file meta_data_file
 %% convert to new names:
 new_db = [];
 fn = fieldnames(db);
@@ -45,6 +31,25 @@ end
 db = new_db;
 save('db.mat', 'db');
 clear fn hop_name k link_direction raw raw_curr raw_prev rssi time
+%% create empty array for all links:
+for i = 1:size(hop_link_mapping,1)
+    hop = char(hop_link_mapping.hop_name(i));
+    if (~ isfield( db, hop))
+        db.(hop) = [];
+        disp( ['missing hop ' hop]);  
+    end
+    
+    direction = char(hop_link_mapping.link_direction(i));
+    if( ~isfield(db.(hop) , direction) )
+        db.(hop).(direction) = [];
+        disp( ['missing direction ' direction]);
+    end
+    if( ~isfield( db.(hop).(direction) , 'raw'))
+        db.(hop).(direction).raw = [];
+        disp( ['missing direction raw ' direction]);
+    end
+end
+clear hops i hop direction
 %% load more data:
 db_path3 = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\packet3\';
 
@@ -68,10 +73,8 @@ months = {  'smbit_2018_01' %1
             'smbit_2019_06' %18
             };
         
-db3 = load_smbit_rssi_data_type4(meta_data ,hop_link_mapping, db, db_path3, months(13)); %change month index!   
-%db = unify_db2(meta_data, db , db3);
-db3_2019_02 = db3; %********* change name to db3_2018_10 ******
-%save('db.mat', 'db3_2018_12' , 'db' , '-append'); %******* change name to db3_2018_10 ********
+db = load_smbit_rssi_data_type4(hop_link_mapping, db, db_path3, months(18)); %change month index!   
+%save('db.mat', 'db' , '-append');
 
 clear db_path3 months
 %% write HDF5file:
@@ -89,3 +92,4 @@ for k=1:numel(fn)
         h5write('db.h5',['/' fn{k} '/l_2to1' ], raw);
     end
 end
+clear fn k raw 

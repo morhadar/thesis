@@ -1,41 +1,48 @@
 %% load ims data 
-paths = {   'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201801.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201802.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201803.csv' ... 
-            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201804.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201805.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201806.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201807.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201808.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201809.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201810.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201811.csv' ...
-            'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_201812.csv' ...
+ims_db_path = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\';
+months = {'ims_201801.csv'%1
+          'ims_201802.csv'%2
+          'ims_201803.csv'%3
+          'ims_201804.csv'%4
+          'ims_201805.csv'%5
+          'ims_201806.csv'%6
+          'ims_201807.csv'%7
+          'ims_201808.csv'%8
+          'ims_201809.csv'%9
+          'ims_201810.csv'%10
+          'ims_201811.csv'%11
+          'ims_201812.csv'%12
+          'ims_201901.csv'%13
+          'ims_201902.csv'%14
+          'ims_201903.csv'%15
+          'ims_201904.csv'%16
+          'ims_201905.csv'%17
+          'ims_201906.csv'%18
             };
 stations = ["beit_dagan" , "hafetz_haim" , "nahshon" , "kvotzat_yavne"];
 measurements = ["temperature" ,	"temperature_max" , 	"temperature_min",	"temperature_near_ground",	"rh" ,...
                 "atmospheric_pressure"	,"global_radiation"	,"direct_radiation"	,"diffuse_radiation"	,"rain" ,...
                 "wind_speed",	"wind_direction"	,"std_wind_direction"	,"speed_of_the_upper_wind",	...
                 "direction_of_the_upper_wind"	,"max_wind_speed_1min",	"max_wind_speed_10min",	"time_end_of_10min" ];
-if (0) %init
-    ims_db = [];
-    for i= 1:length(stations)
-        ims_db.(stations(i)).time = [];
-        for j = 1:length(measurements)
-            ims_db.(stations(i)).(measurements(j)) = []; 
-        end
-    end
-end
+% if (0) %init
+%     ims_db = [];
+%     for i= 1:length(stations)
+%         ims_db.(stations(i)).time = [];
+%         for j = 1:length(measurements)
+%             ims_db.(stations(i)).(measurements(j)) = []; 
+%         end
+%     end
+% end
 
-for i = 12%1:length(paths)
-   ims_db = load_ims_data(char(paths(i)) , ims_db, stations, measurements);
+for i = 11%1:length(paths)
+   ims_db = load_ims_data(ims_db , stations, measurements , ims_db_path , months() );
 end
 
 %save('ims_db.mat' , 'ims_db');
 clear paths stations measurements
 
 %% load ims clouds data
-paths = {   'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_clouds_201802_08.csv' ... %TODO - make is appandable.
+months = {   'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\ims_clouds_201802_08.csv' ... %TODO - make is appandable.
             };
 stations = ["beit_dagan_m"];
 measurements = ["total_clouds" , "total_lower_clouds" , "height_lower_clouds" ,...
@@ -52,8 +59,11 @@ if (1) %init
     end
 end
 
-for i = 1:length(paths)
-   ims_db_clouds = load_ims_data( char(paths(i)) , ims_db_clouds, stations, measurements);
+for i = 1:length(months)
+    %TODO - time for these stations is in UTC. need to fix since the
+    %function 'load_ims_data' is working with LTS time( winter clock all
+    %year long).
+   ims_db_clouds = load_ims_data( char(months(i)) , ims_db_clouds, stations, measurements);
 end
 
 save('ims_db_clouds.mat' , 'ims_db_clouds');

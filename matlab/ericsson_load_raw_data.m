@@ -11,13 +11,13 @@ for i = 1:length(ericsson_meta.LinkID)
 end
 
 
-for n = 1:1000%1:length(txt_files)
+for n = 1:length(txt_files)
     %TODO - read the zip files instead!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     
     temp = readtable( fullfile( txt_files(n).folder ,txt_files(n).name), 'TreatAsEmpty',{'-'}  );
-    temp.Properties.VariableNames = {'time'  'link' , 'unknown' , 'rssi'  };
+    temp.Properties.VariableNames = {'time'  'link' , 'tx' , 'rx'  }; %TODO - verify with Alona if it is indeed Tx and Rx
     
-    for i = [565 566 405 406 133 134]  %1:length(ericsson_meta.LinkID) %TODO run the for loop in the names itselfs
+    for i = 1:length(ericsson_meta.LinkID) %TODO run the for loop in the names itselfs
         link_name = ericsson_meta.LinkID(i); link_name = link_name{1};
         link_name_for_file = strrep( link_name , '_', '-');
         idx = strcmp(temp.link ,link_name_for_file);

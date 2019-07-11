@@ -1,6 +1,5 @@
 clc; clear all;
 %% load data;
-%load('meta_data.mat');
 %load( 'db_old_data_dont_delete.mat'); %db with old names
 load( 'db.mat'); %in old data i replaced -128 with nan. 
 % db_ceragon = load('ceragon.mat' ); 
@@ -8,11 +7,25 @@ load( 'db.mat'); %in old data i replaced -128 with nan.
 % load( 'db_kfar_saba)';
 % load( 'ericsson_januray_horiz_polarization.mat');
 
+geo_location_file = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\meta_data_3.xlsx';
+hop_link_mapping_file = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\meta_data_1.xlsx';
+%hop_link_mapping_file = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\meta_data_hop_link_mapping.xlsx';
+meta_data_file = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\meta_data_2.xlsx';
+
+geo_location = readtable(geo_location_file, 'ReadVariableNames', true  );
+hop_link_mapping = readtable(hop_link_mapping_file, 'ReadVariableNames', true , 'ReadRowNames', true );
+%hop_link_mapping = readtable(hop_link_mapping_file, 'ReadVariableNames', true );
+meta_data = readtable(meta_data_file, 'ReadVariableNames', true , 'ReadRowNames', true );
+
+%TODO - the best thing to do is to add 2 additional colomns to meta_data
+%table with 'other names for up link' and 'other names for down link'
+
 load('ims_db.mat');
 load('ims_db_clouds.mat');
 load('gamliel.mat');
 load( 'suntime_db.mat' );
 
+clear geo_location_file hop_link_mapping_file meta_data_file
 %% parameters
 % System properties:
 frequency = 74.875; %[GHz]
@@ -94,7 +107,18 @@ save('meta_data.mat', 'meta_data');
 % end
 % plot_google_map
 
- 
+%% convert '-128' to 'nan':
+fn = fieldnames(db);
+for k=1:numel(fn)
+    link = char(fn(k));
+    if( isfield(db.(hop) , 'up') )
+        db.(link).up.raw ( db.(link).up.raw(:,2) == -128) = nan;
+    end
+    if( isfield(db.(hop) , 'down') )
+        db.(link).down.raw ( db.(link).down.raw(:,2) == -128) = nan;
+    end
+end
+clear fn k link
 %% AVG
 map = distinguishable_colors(21);
 win_size = (2*60*24)*10; %samples in day * num_of_days.

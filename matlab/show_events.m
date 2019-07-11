@@ -1,4 +1,3 @@
-
 %% choose dates
 switch (2.1)
     case 0;     ds = datetime(2018,01,01,00,00,00); de = datetime();                        %all period
@@ -60,12 +59,15 @@ switch (2.1)
     case 12;   ds = datetime(2018,12,01,00,00,00); de = datetime(2018,12,31,23,59,59);
     case 1212;  ds = datetime(2018,12,09,00,00,00); de = datetime(2018,12,17,17,00,00);
     case 201902;  ds = datetime(2019,02,01,00,00,00); de = datetime(2019,02,28,23,59,59);
+    case 201905;  ds = datetime(2019,05,01,00,00,00); de = datetime(2019,05,31,23,59,59);
+
 
 end
 
 %% choose hops
 switch (0)
-    case 0;     hops = (unique(meta_data.hop_num, 'stable'))';  hops(hops==14) = [];   %by length ascending    
+    %case 0;     hops = (unique(meta_data.hop_num, 'stable'))';  hops(hops==14) = [];   %by length ascending    
+    case 0;     tmp = sortrows(meta_data, 'length'); hops = tmp.hop_name;      hops( strcmp(hops , 'junc11_junc10')) = [];
     case 1;     hops = [5 2 4 7 8 9 10 11 19 21 6  15 20 17 18];   %partial north to south   
     case 1.2;   hops = [5 2 3 4 1 7 8 9 10 11 19 21 14 6 22 23 15 24 20 17 12 13 16 18];  %north to south
     case 2;     hops = [2 1 20 17 18];                             %partial west to east
@@ -80,38 +82,35 @@ switch (0)
     case 8;     hops = [1 23 6 18];
 end
 
+clear tmp
+
 %% plot attenuation of hops: 
 bias = 0;
 map = distinguishable_colors(35);
 nn=1;
 figure;
-for i = hops
-    idx = meta_data.hop_num == i;
-    channel_names = meta_data.link_name(idx);
+for i = 1:length(hops)
+    hop = char(hops(i));
     %subplot(length(hops)+1,1,nn);
     nn = nn+1;
+    if( ~isfield(db , hop)); continue; end %TODO - tmp until all parsing all links
+    directions = fieldnames(db.(hop));
     %yyaxis left
-    for n = 1:size(channel_names,1)
-        cn = char(channel_names(n));
-        if (~isfield(db ,cn))
-            continue;
-        end
-        if( isempty(db.(cn).time_rssi) )
-            continue;
-        end
-        ind_period = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
-        if ( ~any(ind_period))
-            continue;
-        end
-        A = db.(cn).rssi(ind_period);
+    for j = 1:length(directions) %{'up' ,'down'}
+        direction = char(directions(j));
+        A = db.(hop).(char(direction)).raw(:,2);
+        t = datetime(db.(hop).(char(direction)).raw(:,1), 'ConvertFrom', 'posixtime') ;
+        hold on; plot( t(t > ds & t < de) , A(t > ds & t < de));
+%       ind_period = t > ds & t < de;
+%         A = db.(cn).rssi(ind_period);
         %A = (db.(cn).rssi(ind_period) - db.(cn).rsl_median(ind_period));
         %A = conv(A, ones(1,20)/20 , 'same');
         %A = conv( A , [0, 1 -1] , 'same');
         %A = A/meta_data{cn, 'length_KM'}; % normalize dm to dbm.
         %subplot(2,1,1);
-        hold on; plot( db.(cn).time_rssi(ind_period) , A - bias,'.', 'DisplayName', ['hop' num2str(i), ' link' num2str(n)] , 'color', map(i,:)) ;
-        title([ char(ds) ' - ' char(de)]);
-        bias = bias +20;
+%         hold on; plot( db.(cn).time_rssi(ind_period) , A - bias,'.', 'DisplayName', ['hop' num2str(i), ' link' num2str(n)] , 'color', map(i,:)) ;
+%         title([ char(ds) ' - ' char(de)]);
+%         bias = bias +20;
     end
     
 end
@@ -128,6 +127,7 @@ end
 % ind_period = ims_db_clouds.beit_dagan_m.time > ds & ims_db_clouds.beit_dagan_m.time<de;
 % hold on; plot( ims_db_clouds.beit_dagan_m.time(ind_period) ,ims_db_clouds.beit_dagan_m.(ind_period), 'DisplayName' , 'atmospheric_pressure');
 
+clear i j bias map nn directions direction A t 
 %% plot rain gaues 
 stations = ["beit_dagan" , "hafetz_haim" , "nahshon" , "kvotzat_yavne"];
 
@@ -178,12 +178,12 @@ for i = hops
     idx = meta_data.hop_num == i;
     channel_names = meta_data.link_name(idx);
     figure('DefaultAxesFontSize',10);
-    for n = 1:size(channel_names,1)
-        cn = char(channel_names(n));
+    for direction = 1:size(channel_names,1)
+        cn = char(channel_names(direction));
         ind_period = db.(cn).time_rssi > ds & db.(cn).time_rssi < de;
      %   subplot(2,1,1);
         %yyaxis left;
-        hold on; plot( db.(cn).time_rssi(ind_period) , db.(cn).rssi(ind_period) , 'DisplayName', ['link ' num2str(n)] , 'color' , map(n,:) );
+        hold on; plot( db.(cn).time_rssi(ind_period) , db.(cn).rssi(ind_period) , 'DisplayName', ['link ' num2str(direction)] , 'color' , map(direction,:) );
         title([ num2str(i) ' -- ' cn  ' , ' num2str(meta_data{(cn) ,'length_KM'}) 'Km' ] , 'FontSize', 20 , 'Interpreter', 'none'); 
     end
     fig_name = [ 'RSSI__' cn  '__' num2str(meta_data{(cn) ,'length_KM'}) 'Km' '.jpg' ];
@@ -227,9 +227,9 @@ for i = hops
     end
     idx = meta_data.hop_num == i;
     channel_names = meta_data.link_name(idx);
-    for n = 1:length(channel_names)
-        figure('name',[ 'hop' num2str(i), ' link' num2str(n), ' - ' num2str(meta_data{(cn),'length_KM'}*1000) ' m']);
-        cn = char(channel_names(n));
+    for direction = 1:length(channel_names)
+        figure('name',[ 'hop' num2str(i), ' link' num2str(direction), ' - ' num2str(meta_data{(cn),'length_KM'}*1000) ' m']);
+        cn = char(channel_names(direction));
         subplot(4,1,1);
         ind_period = db.(cn).time_rssi > ds & db.(cn).time_rssi<de;
         %A = (db.(cn).rssi(ind_period) - db.(cn).avg_rsl);
