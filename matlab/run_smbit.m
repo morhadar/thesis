@@ -86,56 +86,69 @@ ylabel('distance required [m]');
 
 
 %% calculate minimal rain rate for each link
-r = 0:0.1:100; %[mm/h]. resolution of the imd data is 0.1 therfore it is enought.
-meta_data.minimal_rain_rate = nan( size(meta_data,1) ,1);
-for i = 1:24%(unique(meta_data.hop_num, 'stable'))'
-    idx = meta_data.hop_num == i;
-    L = meta_data.length_KM(idx); L = L(1); % both channels with the same length
-    A = alpha .* (r .^ beta).* L;
-    ind = find(A > quant, 1);
-    meta_data.minimal_rain_rate(idx) = r(ind)*ones( size(meta_data.minimal_rain_rate(idx)) );
-end
-save('meta_data.mat', 'meta_data');
+%TODO - adjust to new meta_data and db structs. 
 
+r = 0:0.1:100; %[mm/h]. resolution of the ims data is 0.1 therfore it is enought.
+meta_data.minimal_rain_rate = nan( size(meta_data,1) ,1);
+for i = 1:length(meta_data.hop_name)
+    if isnan(meta_data.length(i)); continue; end
+    A = alpha .* (r .^ beta).* meta_data.length(i);
+    ind = find(A > quant, 1);
+    meta_data.minimal_rain_rate(i) = r(ind);
+end
+clear r i A ind 
 %% plot links on map
-% figure; title('map');
-% for i = [1 15, 18] %1:size(meta_data,1)
-%    hold on; plot(   [meta_data.transmitter_longitude(i), meta_data.receiver_longitude(i)] ,...
-%                     [meta_data.transmitter_latitude(i), meta_data.receiver_latitude(i)], ...
-%                     'MarkerSize', 50, 'DisplayName',[num2str(meta_data.length_KM(i)*1000) ' m'] );
-%    %legend( [num2str(meta_data.length_KM(i)*1000) ' m']); 
-% end
-% plot_google_map
+%TODO - adjust to new meta_data and db structs. 
+figure; title('map');
+for i = [1 15, 18] %1:size(meta_data,1)
+   hold on; plot(   [meta_data.transmitter_longitude(i), meta_data.receiver_longitude(i)] ,...
+                    [meta_data.transmitter_latitude(i), meta_data.receiver_latitude(i)], ...
+                    'MarkerSize', 50, 'DisplayName',[num2str(meta_data.length_KM(i)*1000) ' m'] );
+   %legend( [num2str(meta_data.length_KM(i)*1000) ' m']); 
+end
+plot_google_map
 
 %% convert '-128' to 'nan':
 fn = fieldnames(db);
 for k=1:numel(fn)
-    link = char(fn(k));
+    hop = char(fn(k));
+    disp(hop)
     if( isfield(db.(hop) , 'up') )
-        db.(link).up.raw ( db.(link).up.raw(:,2) == -128) = nan;
+        db.(hop).up.raw ( db.(hop).up.raw(:,2) == -128) = nan;
     end
     if( isfield(db.(hop) , 'down') )
-        db.(link).down.raw ( db.(link).down.raw(:,2) == -128) = nan;
+        db.(hop).down.raw ( db.(hop).down.raw(:,2) == -128) = nan;
     end
 end
 clear fn k link
-%% AVG
-map = distinguishable_colors(21);
-win_size = (2*60*24)*10; %samples in day * num_of_days.
-for i = (unique(meta_data.hop_num, 'stable'))'
-    idx = meta_data.hop_num == i;
-    channel_names = meta_data.link_name(idx);
-    for n = 1:size(channel_names,1)
-        cn = char(channel_names(n));
-        if ( ~isfield(db ,cn) ); continue; end
-        %AVG
-        db.(cn).rsl_median = movmedian(db.(cn).rssi, win_size,'omitnan');
-        db.(cn).rsl_mean = movmean(db.(cn).rssi, win_size,'omitnan');
-        db.(cn).avg = db.(cn).rsl_mean;
+
+%% convert 'nan' to -128;
+fn = fieldnames(db);
+for k=1:numel(fn)
+    hop = char(fn(k));
+    disp(hop)
+    if( isfield(db.(hop) , 'up') )
+        db.(hop).up.raw ( isnan(db.(hop).up.raw(:,2)) ) = -128;
+    end
+    if( isfield(db.(hop) , 'down') )
+        db.(hop).down.raw ( isnan(db.(hop).down.raw(:,2) )) = -128;
     end
 end
-
+clear fn k link
+%% MEAN
+fn = fieldnames(db);
+win_size = (2*60*24)*10; %samples in day * num_of_days.
+for k=1:numel(fn)
+    hop = char(fn(k));
+    directions = fieldnames(db.(hop));
+    for j = 1:length(directions)
+        direction = char(directions(j));
+        db.(hop).(direction).mean = movmean( db.(hop).(direction).raw(:,2),win_size,'omitnan');
+    end
+end
+clear fn map win_size hop direction avg
 %% STD
+%TODO - adjust to new meta_data and db structs. 
 for i = (unique(meta_data.hop_num, 'stable'))'
     idx = meta_data.hop_num == i;
     channel_names = meta_data.link_name(idx);
@@ -157,26 +170,11 @@ for i = (unique(meta_data.hop_num, 'stable'))'
         db.(cn).std_down = sqrt(db.(cn).variance_down);
     end 
 end
-%save('db.mat', 'db' , '-append');
-
 %% calc free space path loss 
-meta_data.fspl = fspl(meta_data.length_KM* 1000 , lambda ); %[db]
+meta_data.fspl = fspl(meta_data.length* 1000 , lambda ); %[db]
 
-%Fersnel zone 
+%% Fersnel zone 
 n = 1; 
 %mid_path_radius = 0.5 * sqrt(n*lambda*d) ;
-mid_path_radius = 8.656* sqrt( meta_data.length_KM ./ frequency); %[m]
-
-%% init structs:
-for i = (unique(meta_data.hop_num, 'stable'))'
-    idx = meta_data.hop_num == i;
-    channel_names = meta_data.link_name(idx);
-    for n = 1:length(channel_names)
-        cn = char(channel_names(n));
-        db.(cn).freq_amp = nan(length(harmonics) , 12);
-    end
-end
-
-
-
+mid_path_radius = 8.656* sqrt( meta_data.length ./ frequency); %[m]
 

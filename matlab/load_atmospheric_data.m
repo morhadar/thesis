@@ -24,20 +24,7 @@ measurements = ["temperature" ,	"temperature_max" , 	"temperature_min",	"tempera
                 "atmospheric_pressure"	,"global_radiation"	,"direct_radiation"	,"diffuse_radiation"	,"rain" ,...
                 "wind_speed",	"wind_direction"	,"std_wind_direction"	,"speed_of_the_upper_wind",	...
                 "direction_of_the_upper_wind"	,"max_wind_speed_1min",	"max_wind_speed_10min",	"time_end_of_10min" ];
-% if (0) %init
-%     ims_db = [];
-%     for i= 1:length(stations)
-%         ims_db.(stations(i)).time = [];
-%         for j = 1:length(measurements)
-%             ims_db.(stations(i)).(measurements(j)) = []; 
-%         end
-%     end
-% end
-
-for i = 11%1:length(paths)
-   ims_db = load_ims_data(ims_db , stations, measurements , ims_db_path , months() );
-end
-
+ims_db = load_ims_data(ims_db , stations, measurements , ims_db_path , months(11:18) );
 %save('ims_db.mat' , 'ims_db');
 clear paths stations measurements
 

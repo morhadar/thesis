@@ -1,3 +1,13 @@
+%% init structs:
+%TODO - adjust to new meta_data and db structs. 
+for i = (unique(meta_data.hop_num, 'stable'))'
+    idx = meta_data.hop_num == i;
+    channel_names = meta_data.link_name(idx);
+    for n = 1:length(channel_names)
+        cn = char(channel_names(n));
+        db.(cn).freq_amp = nan(length(harmonics) , 12);
+    end
+end
 %% calc statistics
 for hop = hops
     idx = meta_data.hop_num == hop;
