@@ -1,4 +1,4 @@
-function [hops_sorted , sort_index] = sort_hops_by_geographic_location(links_ID , meta_data , alpha_wind)
+function [hops_sorted, sort_index] = sort_hops_by_geographic_location(hops_ID, meta_data, alpha_wind)
 %inputs:    hops - cell array of size N.
 %           alpha is the angle from x axis counterclockwise. %
 %outputs:   hops_arranged - sorted hops closest to farest.
@@ -8,8 +8,7 @@ function [hops_sorted , sort_index] = sort_hops_by_geographic_location(links_ID 
 %           from hop_arranged(i) to get to hop_arranged(j). if sort_flag is
 %           on then this matrix is also sorted.
 
-[~,ia,~] = intersect(meta_data.hop_ID,links_ID, 'stable');
-hops = meta_data.hop_name(ia);
+hops = u.hop_ID2name(hops_ID, meta_data);
 orig_coordinates = [meta_data.x_center(hops), meta_data.y_center(hops)]';
 R = [cosd(alpha_wind) , sind(alpha_wind) ; -sind(alpha_wind) cosd(alpha_wind)]; %rotate clockwize in order to get points coordinate in the rotated coortinade system (rather than the coordinates of the rotates points).
 

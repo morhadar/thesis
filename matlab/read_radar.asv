@@ -61,6 +61,3 @@ end
 %% read gif:
 path = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\';
 nov06 = '2018-11-06.gif';
-dec06 = '2018-12-06.gif';
-
-[imgs,map]=imread(fullfile(path , nov06),'frames','all');
