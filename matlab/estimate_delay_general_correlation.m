@@ -1,185 +1,156 @@
-%% plot north-south or east-west besides rain gauges:
-figure;
+%% run full algorithm for all rain events:
+%this is true for pick_rain_event1:
+events_to_check = 129; %april 21
+events_to_check = 131; %no rain
+events_to_check = 1:131; 
 
-hops = pick_hops(1);
-map = distinguishable_colors(length(hops));
-bias = 0;
-subplot(3,3,[1 4 7]);
-title('south to north');
-for i = 1:length(hops)
-    hop = char(hops(i));
-    directions = fieldnames(db.(hop));
-    for j = 1%1:length(directions) %{'up' ,'down'}
-        direction = char(directions(j));
-        rsl = db.(hop).(char(direction)).raw(:,2);
-        avg = db.(hop).(direction).mean;
-        rsl = rsl - avg - bias;
-        %rsl = conv(rsl, ones(1,20)/20 , 'same'); %smoothing 2 min samples
-        %rsl = conv( rsl , [0, 1 -1] , 'same');
-        %rsl = rsl/meta_data{hop, 'length'}; % normalize dm to dbm.
-        t = datetime(db.(hop).(char(direction)).raw(:,1), 'ConvertFrom', 'posixtime') ;
-        hold on; plot( t(t > ds & t < de) , rsl(t > ds & t < de), 'DisplayName', [hop ' ' direction] , 'color', map(i,:));
-        bias = bias +2;  
-    end  
-end
+events_to_check(events_to_check==9) = [];%TODO - debug why failing for tho
+events_to_check(events_to_check==10) = [];%TODO - debug why failing for tho
+events_to_check(events_to_check==11) = [];%TODO - debug why failing for tho
+events_to_check(events_to_check==12) = [];%TODO - debug why failing for tho
+events_to_check(events_to_check==13) = [];%TODO - debug why failing for tho
+events_to_check(events_to_check==14) = [];%TODO - debug why failing for tho
+events_to_check(events_to_check==15) = [];%TODO - debug why failing for tho
+events_to_check(events_to_check==52) = [];%TODO - debug why failing for tho
+events_to_check(events_to_check==79) = [];%TODO - debug why failing for tho
+events_to_check(events_to_check==86) = [];%TODO - debug why failing for tho
+events_to_check(events_to_check==112) = [];%TODO - debug why failing for tho
 
-hops = pick_hops(2);
-map = distinguishable_colors(length(hops));
-bias = 0;
-subplot(3,3,[2 5 8]);
-title('west to east');
-for i = 1:length(hops)
-    hop = char(hops(i));
-    directions = fieldnames(db.(hop));
-    for j = 1%1:length(directions) %{'up' ,'down'}
-        direction = char(directions(j));
-        rsl = db.(hop).(char(direction)).raw(:,2);
-        avg = db.(hop).(direction).mean;
-        rsl = rsl - avg - bias;
-        %rsl = conv(rsl, ones(1,20)/20 , 'same'); %smoothing 2 min samples
-        %rsl = conv( rsl , [0, 1 -1] , 'same');
-        %rsl = rsl/meta_data{hop, 'length'}; % normalize dm to dbm.
-        t = datetime(db.(hop).(char(direction)).raw(:,1), 'ConvertFrom', 'posixtime') ;
-        hold on; plot( t(t > ds & t < de) , rsl(t > ds & t < de), 'DisplayName', [hop ' ' direction] , 'color', map(i,:));
-        bias = bias +2;  
-    end  
-end
 
-fn = fieldnames(ims_db);
-map = distinguishable_colors(length(fn));
-for k=1:numel(fn)
-    s = char(fn(k));
-    ind_period = ims_db.(s).time > ds & ims_db.(s).time<de;
+% events_to_check = 1:10;
+n_events = length(events_to_check);
 
-    subplot(3,3,3); title('rainy days'); xlabel('date and time'); ylabel('R mm/h');
-    legend('show');  
-    hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).rain(ind_period) * 6, 'DisplayName', s, 'color' , map(k,:));
-    hold on; plot( (meta_data.minimal_rain_rate * ones(size(ds:seconds(30):de)))' , 'HandleVisibility','off', 'color' , map(k,:)); 
+alpha_wind = nan(length(events_to_check),1);
+v_wind     = nan(length(events_to_check),1);
+gt_parameters        = nan( length(events_to_check) ,2 , 4);
+
+hops = pick_hops(4.2);
+hops(strcmp(hops , 'muni_katzirnew')) = []; %TODO - tmp until I will have all cordinates
+hops(strcmp(hops , 'katzirnew_katzirtichon')) = []; %TODO - tmp until I will have all cordinates
+
+dir_name = 'C:\Users\mhadar\Documents\personal\thesis_materials\graphs_and_figures\herztel_street\';
+
+stations = fieldnames(ims_db);
+map_stations = distinguishable_colors(length(stations));
+
+% events_info=struct('eventID',[], 'ds',[], 'de',[],'duration' , [], 'new_hops' , [], ...
+%                     'tau', [], 'v', [],'direction',[], 'hops_arranged', []...
+%                     );
+for i = 1:n_events
+    eventID = events_to_check(i);
+    eventID_s = ['event' num2str(eventID)];
+    disp(eventID_s);
     
-    subplot(3,3,6); title('wind velocity'); xlabel('date and time'); ylabel('|v| m/s'); 
-    hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).wind_speed(ind_period), 'DisplayName', s, 'color' , map(k,:));
-    hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).speed_of_the_upper_wind(ind_period), '--', 'DisplayName', s,'color' , map(k,:));
-    %TODO - align ims direction to estimated direction!!! 
-    subplot(3,3,9); title('wind direction'); xlabel('date and time'); ylabel('|v| m/s'); 
-    hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).wind_direction(ind_period) ,'DisplayName', s , 'color' , map(k,:));
-    %TODO  - how to add errorbar for this the 'std_wind_direction' ;
-    hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).direction_of_the_upper_wind(ind_period), '--', 'DisplayName', s, 'color' , map(k,:));
-end
-clear fn k
-%% cross correlation
-hops = pick_hops(2);
-N_links = length(hops);
-N_samples = minutes(de-ds) * 2;
-X = zeros(N_samples , length(hops));
-figure;
-for i = 1:N_links
-    hop = char(hops(i));
-    directions = fieldnames(db.(hop));
-    for j = 1%1:length(directions) %{'up' ,'down'} %TODO  take also the second direction!
-        direction = char(directions(j));
-        rsl = db.(hop).(char(direction)).raw(:,2);
-        avg = db.(hop).(direction).mean;
-        rsl = rsl - avg; %TODO make sure that I need it.
-        t = datetime(db.(hop).(char(direction)).raw(:,1), 'ConvertFrom', 'posixtime') ;
-        ind = t > ds & t < de;
-        if( sum(ind)==0 ); continue; end
-        ts = timeseries( rsl(ind) , datestr( t(ind) ) );
-        tmp =  resample(ts , datestr(ds:seconds(30):de));
-        X(:,i) = tmp.Data(1:end-1) - mean(tmp.Data(1:end-1), 'omitnan');
-        hold on; 
-        plot( tmp.Data(1:end-1) , 'DisplayName' , num2str(hop) );
+    [ds ,de] = pick_rain_event(eventID);
+    
+    [valid_hops , tau , valid_rssi , valid_time_axis] = calc_xcorr_between_hops(hops, db, ds, de ,meta_data);
+    [distance, phi] = calc_phi_and_distance_for_each_pair_of_hops( valid_hops, meta_data);
+    
+    % MLE (x - is the parameter to estimate)
+    weight = 1./(meta_data.length(valid_hops) * meta_data.length(valid_hops)');
+    residual = @(x) weight(:).*(tau(:) - (distance(:)/x(1)) .* cosd(phi(:) - x(2))); %TODO how is it possible to get the same results when it was 'sind' instead of 'cosd'
+%     residual = @(x) tau(:) - (distance(:)/x(1)) .* cosd(phi(:) - x(2)); %TODO how is it possible to get the same results when it was 'sind' instead of 'cosd'
+    v_wind0 = 20;
+    alpha_wind0 = 360;
+    start = [v_wind0 alpha_wind0];
+    x = lsqnonlin(residual,start);
+    v_wind(i) = x(1); 
+    alpha_wind(i) = wrapTo360(x(2)); 
+    % WLS (x - is the input)
+%     x = [distance(:) ,phi(:)];
+%     modelFun = @(b,x) (x(1)./b(1)).*cosd(x(2)-b(2));
+%     nlm = fitnlm(x, tau(:),modelFun,start);
+    
+    
+    
+    [~ , valid_hops_arranged, sort_index] = calc_effective_distance_and_sort_hops(valid_hops , meta_data , alpha_wind(i), true);
+
+    %present result
+    fig_event = figure('Name' , [eventID_s ' - ' char(ds) ' - ' char(de)], 'units','normalized','outerposition',[0 0 1 1], 'visible','off');
+
+    subplot(4,2, [5 7]);
+    show_hops_on_map (valid_hops_arranged, meta_data, true);
+    %add_wind_to_plot ( x_min , x_max , y_min , y_max, alpha_wind ,v_wind); %TODO  - solve it
+    title(['v = ' num2str(v_wind(i)) 'm/s' ' , ' 'direction = ' num2str(alpha_wind(i))]);
+   
+    subplot(4,2,[1 3]); 
+    title('rssi');
+    map_hops = distinguishable_colors(length(valid_hops_arranged), {'w','k'}); %TODO - distinguishable FIX! colors
+    bias = 0;
+    for ii = 1:length(valid_hops_arranged)
+        hop = char(valid_hops_arranged(ii));
+        hold on; plot( valid_time_axis , valid_rssi(: , ii) - bias ,'color' , map_hops(ii,: ) , 'DisplayName', hop);
+        hold on; text( valid_time_axis(1), valid_rssi(20 , ii) - bias, num2str(ii), 'color' , map_hops(ii,: ));
+        bias = bias+1;
     end
-end
+    
+    for k=1:numel(stations)
+        s = char(stations(k));
+        ind_period = ims_db.(s).time > ds & ims_db.(s).time<de;
 
-
-%exclude empty links.
-valid_hops = any(X); 
-new_X = X(:,valid_hops);
-new_hops = hops(valid_hops);
-new_N_links = length(new_hops);
-
-%exclude NaN samples at the beginig and ending of sequence:
-new_X = new_X(85:N_samples-11 , :);
-
-%compute cross-correlation between all links:
-[R,lag] = xcorr(new_X);
-auto_correlation = R(: , 1:new_N_links:end ); %TODO - check why for some links the autocorrelation is not symetric.
-cross_correlation = R;
-cross_correlation(: , 1:new_N_links:end ) = [];
-[~,I] = max(abs(R));
-delay_estimated = lag(I);
-tau = reshape(delay_estimated , [new_N_links , new_N_links ])';
-any(any(tau' +tau)) %sanity check: 0 is the wanted result.
-
-figure; plot( lag,auto_correlation ); title('auto correaltion');
-figure; plot( lag,cross_correlation ); title('cross correaltion');
-
-clear hops N X hop direction tmp ts rsl t
-
-%% MLE using grid search.
-%calc geometry:
-distance = zeros(size(tau));
-phi = zeros(size(tau));
-figure;
-hold on;
-for r = 1:new_N_links
-    for c = 1:new_N_links
-        tau(r , c);
-        link1_name = char(new_hops(r));
-        link2_name = char(new_hops(c));
-        x1 = meta_data.x_center(link1_name);
-        y1 = meta_data.y_center(link1_name);
-        x2 = meta_data.x_center(link2_name);
-        y2 = meta_data.y_center(link2_name);
-        distance(r,c) = sqrt( sum( (x1-x2).^2 + (y1-y2).^2)) ;
-        phi(r,c) =  atand( (y2 - y1) / (x2 - x1));
-        if (phi(r,c)<0)
-            phi(r,c) = 180 + phi(r,c);
-        end
-        
-        plot( [x1 x2] , [y1 y2]  , 'DisplayName' , [link1_name ' -> ' link2_name ]);
-        text( mean([x1 x2]) , mean([y1 y2]), num2str(phi(r,c)) );
-
-        %for plotting links as well:
-%         site1 = char(meta_data.site1(link1_name));
-%         site2 = char(meta_data.site2(link1_name));
-%         ind1 = strcmp(geo_location.site_name, site1);
-%         y1 = geo_location.latitude(ind1);
-%         x1 = geo_location.longitude(ind1);
-%         ind2 = strcmp(geo_location.site_name, site2);
-%         y2 = geo_location.latitude(ind2);
-%         x2 = geo_location.longitude(ind2);
-%         plot( [x1 x2] , [y1 y2], 'LineStyle' , '--');
+%         subplot(4,2,6); title('|v|'); xlabel('date and time'); ylabel('|v| m/s'); legend('show'); 
+%         hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).wind_speed(ind_period), 'DisplayName', s, 'color' , map_stations(k,:));
+%         hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).speed_of_the_upper_wind(ind_period), '--', 'HandleVisibility','off','color' , map_stations(k,:));
+         gt_parameters(i , 1 , k) = mean(ims_db.(s).speed_of_the_upper_wind(ind_period));
 %         
-%         site1 = char(meta_data.site1(link2_name));
-%         site2 = char(meta_data.site2(link2_name));
-%         ind1 = strcmp(geo_location.site_name, site1);
-%         y1 = geo_location.latitude(ind1);
-%         x1 = geo_location.longitude(ind1);
-%         ind2 = strcmp(geo_location.site_name, site2);
-%         y2 = geo_location.latitude(ind2);
-%         x2 = geo_location.longitude(ind2);
-%         plot( [x1 x2] , [y1 y2], 'LineStyle' , '--');
+%         subplot(4,2,8); title('wind direction'); xlabel('date and time'); ylabel('|v| m/s'); 
+%         hold on; plot(ims_db.(s).time(ind_period) ,convert_IMS_wind_direction(ims_db.(s).wind_direction(ind_period)) ,'DisplayName', s , 'color' , map_stations(k,:));
+%         hold on; plot(ims_db.(s).time(ind_period) ,convert_IMS_wind_direction(ims_db.(s).direction_of_the_upper_wind(ind_period)), '--', 'HandleVisibility','off', 'color' , map_stations(k,:));
+         gt_parameters(i , 2 , k) = convert_IMS_wind_direction(mean(ims_db.(s).direction_of_the_upper_wind(ind_period), 'omitnan'));
+        
+        subplot(4,2,[2 4]); title('rain gauges'); xlabel('date and time'); ylabel('R mm/h'); legend('show'); 
+        hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).rain(ind_period), 'DisplayName', s, 'color' , map_stations(k,:));
     end
+%     subplot(4,2,6);
+%     hold on; plot( ds:seconds(30):de, (estimated_parameters(i , 1)  * ones(size(ds:seconds(30):de))) , 'DisplayName', '|v|',  'color' , 'm');
+%     legend('show');
+% 
+%     subplot(4,2,8);
+%     hold on; plot( ds:seconds(30):de, (estimated_parameters(i , 2)  * ones(size(ds:seconds(30):de))) , 'DisplayName', 'alpha',  'color' , 'm'); 
+%     legend('show');
+    
+    saveas(gcf , [dir_name eventID_s '.jpg']);
+
+    %save results in struct:
+    events_info(i).eventID = eventID;
+    events_info(i).ds = ds;
+    events_info(i).de = de;
+    events_info(i).duration = hours(de-ds);
+    events_info(i).new_hops = valid_hops;
+    events_info(i).tau = tau;
+    events_info(i).v = v_wind(i);
+    events_info(i).hops_arranged = valid_hops_arranged;
+    events_info(i).direction = alpha_wind(i);
+%     events_info(i_event).gt_v = 
+%     events_info(i_event).gt_direction = 
+    
 end
-hold off;
+figure('Name' , 'scatter plot', 'units','normalized','outerposition',[0 0 1 1]); 
+subplot(1,2,1); 
+title('|v|'); 
+xlabel('gt'); 
+ylabel('estimated |v| m/s');
+hold on; scatter( mean( gt_parameters(: , 1 , :) ,3, 'omitnan') , v_wind(:) );
+v_max = max(v_wind);
+%hold on; plot(mean( gt_parameters(: , 1 , :) ,3, 'omitnan') , v_wind0*ones(1, n_events));
+hold on; plot( 1:v_max , 1:v_max);
+ylim([0 v_max]); xlim([0 v_max]);
 
-phi_vec = phi(:);
-tau_vec = tau(:);
-distance_vec = distance(:);
+subplot(1,2,2); 
+title('wind direction'); 
+xlabel('gt'); 
+ylabel('estimated alpha m/s');
+hold on; scatter( mean( gt_parameters(: , 2 , :),3, 'omitnan') , alpha_wind(:) );
+%hold on; plot(mean( gt_parameters(: , 2 , :) ,3, 'omitnan') , alpha_wind0*ones(1, n_events) );
+hold on; plot( 1:360 , 1:360);
+ylim([0 360]); xlim([0 360]);
+saveas(gcf , [dir_name 'scatter.jpg']);
 
-nan_position = isnan(phi_vec);
-phi_vec = phi_vec(~nan_position);
-tau_vec = tau_vec(~nan_position);
-distance_vec = distance_vec(~nan_position);
+clear fn k map s ind_period
 
-residual = @(x) tau_vec - (distance_vec/x(1)) .* sind(phi_vec - x(2));
-v0 = 5;
-alpha0 = 45;
-x = lsqnonlin(residual,[v0 alpha0]);
-v = x(1)
-alpha = x(2)
-
-clear r c 
-
-
+%% print event info!
+T = struct2table(events_info);
+for i= 1:height(T)
+    T{i,10} = length(T{i,5}{1});
+end
+T1 = T(:,[1 2 3 4 7 8 10]);
