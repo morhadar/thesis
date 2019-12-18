@@ -2,7 +2,14 @@
 storms_info   = cell(253,1);
 %% run full algorithm for all rain events:
 events_to_check = 1:253; %total event is 253.
-mode = 'all_links'; %options = 'all_links', 'independent_links', 'all_hops'
+%options for mode= 
+%'all_links' - calculate tau between each pair of link
+%'all_links_avg' - calcualte tau between each pair of link and then avg between similar pairs.
+%'independent_links' - take M-1 measurements between a pivot and all other links
+%'independent_linksM' - take M measurments between circular links
+%'all_hops' - pick randomaly one link out of two links combining a hop and then tau between all posible pairs.
+%super_mode - 'all_links_avg' + 'independent_linksM' - avg meaurements and then take M circular link
+mode = 'super_mode';
 
 v_wind0 = 20;
 alpha_wind0 = 360;
@@ -43,12 +50,11 @@ for eventID = events_to_check
         %%% extract rssi of required hops and intepolated for missing values.
         %%% In addition normalize by reducing link's baseline and by division in link's length.
         %%% In addition reduce rssi avg within specific time frame  
-        [rssi, hops_ID] = extract_rssi(hops, db, ds, de, meta_data);
+        [rssi, hops_ID] = extract_rssi(hops, db, ds, de, meta_data, true, true);
         [rssi, hops_ID, tau, distance, phi] = calc_xcorr_between_specific_links(rssi, hops_ID, meta_data, distanceG, phiG, mode);
         
         %%% LS (x - is the parameter to estimate)
-        %weight = 1./(meta_data.length(valid_hops) * meta_data.length(valid_hops)');
-        weight = 1;
+        weight = 1; %weight = 1./(meta_data.length(valid_hops) * meta_data.length(valid_hops)');
         residual = @(x) weight(:).*(tau - (distance/x(1)) .* cosd(phi - x(2)));
         x = lsqnonlin(residual,[v_wind0 alpha_wind0]);
         %x = lsqnonlin(residual,[v_wind0 alpha_wind0], lb ,ub); %TODO: try to bound optimization
@@ -70,5 +76,5 @@ for eventID = events_to_check
     disp(['end of ' eventID_s]);
 end
 
-%save('storms_info_alllinks.mat' , 'storms_info');
+%save('storms_info_independent_linksM.mat' , 'storms_info');
 clear k map s ind_period

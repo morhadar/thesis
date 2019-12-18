@@ -59,8 +59,38 @@ end
    implay('Velocity.avi');
    
 %% read gif:
-path = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\';
+path = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\ims\weather2day\';
 nov06 = '2018-11-06.gif';
+nov06_frames = 12:17;
 dec06 = '2018-12-06.gif';
 
-[imgs,map]=imread(fullfile(path , nov06),'frames','all');
+[imgs,map] = imread(fullfile(path , nov06),'frames','all');
+% opticFlow = opticalFlowLK('NoiseThreshold',0.009);
+% opticFlow = opticalFlowFarneback('NumPyramidLevels', 1);
+opticFlow = opticalFlowHS;
+
+
+h = figure;
+movegui(h);
+hViewPanel = uipanel(h,'Position',[0 0 1 1],'Title','Plot of Optical Flow Vectors');
+hPlot = axes(hViewPanel);
+
+% figure;
+for i = 1:2%length(nov06_frames)
+%     figure;
+%     %subplot(2,3,i); 
+%     imshow(imgs(:,:,1,nov06_frames(i))); 
+%     title(num2str(nov06_frames(i)));
+%     saveas(gcf, [path num2str(nov06_frames(i)) '.jpg']);
+    %TODO - continue from here!
+    frameGray = imgs(:,:,1,nov06_frames(i));
+    flow = estimateFlow(opticFlow,frameGray);
+%     subplot(1,2,i);
+%     hold on; imshow(frameGray)
+%     hold on; plot(flow)
+    imshow(frameGray)
+    hold on
+    plot(flow,'DecimationFactor',[5 5],'ScaleFactor',60,'Parent',hPlot);
+    hold off
+    
+end

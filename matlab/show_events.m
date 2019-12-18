@@ -1,5 +1,5 @@
 %% pick hops and dates
-hops = pick_hops(meta_data, 0);
+hops = pick_hops(meta_data, 0.01);
 [ds ,de] = pick_rain_event(93);
 %% plot attenuation of hops: 
 bias = 0;
@@ -182,3 +182,50 @@ for k=1:numel(fn)
     hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).direction_of_the_upper_wind(ind_period) -180, '--', 'DisplayName', s, 'color' , map(k,:));
 end
 clear fn k map s ind_period
+
+%% save data to csv
+save_to = 'C:\Users\mhadar\Documents\personal\thesis_materials\graphs_and_figures\for_adam\';
+% ds = datetime(2019,03,23,00,00,00);
+% de = datetime(2019,03,26,00,00,00);
+%name = 'march_24_25';
+
+ds = datetime(2019,03,29,00,00,00);
+de = datetime(2019,04,02,00,00,00);
+name = 'april_02';
+
+time_axis = ds:seconds(30):de;
+hops = pick_hops(meta_data, 0.01);
+[rssi , hops_ID, link_ID] = extract_rssi(hops, db , ds ,de , meta_data, false, false);
+
+figure;
+title('rssi');
+bias = 0;
+for ii = 1:length(hops_ID)
+    hold on; plot(time_axis, rssi(:,ii), 'color' , map_color_by_hop(hops_ID(ii), :) , 'DisplayName', ['hop:' num2str(hops_ID(ii))]);
+    hold on; text(time_axis(1), rssi(1,ii), num2str(hops_ID(ii)), 'color' , map_color_by_hop(hops_ID(ii),: ));
+    bias = bias+5;
+end
+saveas(gcf, [save_to name '.jpg']);
+
+time_axis.Format = 'yyyy-MM-dd hh:mm:ss';
+time_axis = time_axis';
+
+filename = fullfile(save_to, name);
+[fid, msg] = fopen(filename, 'wt');
+if fid < 0
+  error('Could not open file "%s" because "%s"', fid, msg);
+end
+fprintf(fid, 'date,');
+for i = 1:length(hops_ID)
+    fprintf(fid, '%s %s,', char(u.hop_ID2name(hops_ID(i),meta_data)), link_ID{i});
+end
+fprintf(fid, '\n');
+for n=1:length(time_axis)
+    fprintf(fid, [char(time_axis(n)) ',']);
+    for i =1:length(hops_ID)
+        fprintf(fid, '%f,', rssi(n,i));
+    end
+    fprintf(fid, '\n');
+end
+fclose(fid);
+

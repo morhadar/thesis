@@ -58,8 +58,8 @@ plot(r)
 
 %NOTE: 
 %corr(s1,s2) - event that occur at t in s2 is occuring at t+lag in s1: 
-%s2(t) = s1(t+tau) 
-%if tau<0 then s1 occurs before s2!! (if tau>0 then s1 occurs after s2)
+%s1(t) = s2(t-tau) 
+%if s1 is later in time then tau>0.
 
 s1 = [ 0 0 0 0 0 1 2 5 10 5 2 1];
 s2 = [ 0 5 5 5 5 5 0 0 0 0 0 0];
