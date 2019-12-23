@@ -6,8 +6,8 @@ load( 'db.mat'); %in old data i replaced -128 with nan.
 % load( 'db_kfar_saba)';
 % load( 'ericsson_januray_horiz_polarization.mat');
 
-hop_link_mapping_file = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\meta_data_1.xlsx';
-meta_data_file = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\smbit\meta_data_2.xlsx';
+hop_link_mapping_file = '..\data\smbit\meta_data_1.xlsx';
+meta_data_file = '..\data\smbit\meta_data_2.xlsx';
 
 hop_link_mapping = readtable(hop_link_mapping_file, 'ReadVariableNames', true , 'ReadRowNames', true );
 meta_data = readtable(meta_data_file, 'ReadVariableNames', true , 'ReadRowNames', true );
@@ -163,9 +163,9 @@ end
 %% geodisy - 
 lat = [meta_data.site1_latitude ; meta_data.site2_latitude]; 
 lat(lat==0) = []; %TODO - should not be here once I have the location of all sites.
-lon = [meta_data.site1_longitude ; meta_data.site2_longitude]; 
-lon(lon==0) = []; %TODO - should not be here once I have the location of all sites.
-dczone = utmzone(mean(lat,'omitnan'), mean(lon,'omitnan')); %36R
+long = [meta_data.site1_longitude ; meta_data.site2_longitude]; 
+long(long==0) = []; %TODO - should not be here once I have the location of all sites.
+dczone = utmzone(mean(lat,'omitnan'), mean(long,'omitnan')); %36R
 utmstruct = defaultm('utm'); 
 utmstruct.zone = dczone;  
 utmstruct.geoid = wgs84Ellipsoid;
