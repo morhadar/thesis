@@ -2,32 +2,25 @@
 storms_info   = cell(253,1);
 %% run full algorithm for all rain events:
 events_to_check = 1:253; %total event is 253.
-%options for mode= 
-%'all_links' - calculate tau between each pair of link
-%'all_links_avg' - calcualte tau between each pair of link and then avg between similar pairs.
-%'independent_links' - take M-1 measurements between a pivot and all other links
-%'independent_linksM' - take M measurments between circular links
-%'all_hops' - pick randomaly one link out of two links combining a hop and then tau between all posible pairs.
-%super_mode - 'all_links_avg' + 'independent_linksM' - avg meaurements and then take M circular link
-mode = 'super_mode';
+mode = 'average_4';
 
 v_wind0 = 20;
 alpha_wind0 = 360;
 lb = [0,0];
 ub = [200,360];
 
-%%% get a list of desiered hops where list is sorted according to hop ID:
+%%% get a list of desired hops where list is sorted according to hop ID:
 hops_in_total = pick_hops(meta_data , 0.01);
 [distanceG, phiG] = calc_phi_and_distance_for_each_pair_of_hops(hops_in_total, meta_data);
 
-%%% Exclude of links with missing georpahical meta-data. TODO:get mate-data.
+%%% Exclude links with missing georpahical meta-data. TODO:get mate-data.
 hops_in_total(strcmp(hops_in_total , 'muni_katzirnew')) = [];
 hops_in_total(strcmp(hops_in_total , 'katzirnew_katzirtichon')) = [];
 
 %%% Exclude one crazy hop (was disturbed by a tree)
-% hops_in_total(strcmp(hops_in_total , 'junc11_junc10')) = []; %TODO: think if to exclude it 
+% hops_in_total(strcmp(hops_in_total , 'junc11_junc10')) = []; %TODO: consider if to exclude it 
 
-for eventID = events_to_check
+for eventID = events_to_check %42 %28
     eventID_s = ['event' num2str(eventID)];
     disp(eventID_s);
     
@@ -49,9 +42,9 @@ for eventID = events_to_check
         
         %%% extract rssi of required hops and intepolated for missing values.
         %%% In addition normalize by reducing link's baseline and by division in link's length.
-        %%% In addition reduce rssi avg within specific time frame  
-        [rssi, hops_ID] = extract_rssi(hops, db, ds, de, meta_data, true, true);
-        [rssi, hops_ID, tau, distance, phi] = calc_xcorr_between_specific_links(rssi, hops_ID, meta_data, distanceG, phiG, mode);
+        %%% In addition reduce rssi avg within specific time frame
+        [rssi, hops_ID_orig, link_ID] = extract_rssi(hops, db, ds, de, meta_data, true, true);
+        [hops_ID, tau, distance, phi] = calc_xcorr_between_specific_links(rssi, hops_ID_orig, meta_data, distanceG, phiG, mode);
         
         %%% LS (x - is the parameter to estimate)
         weight = 1; %weight = 1./(meta_data.length(valid_hops) * meta_data.length(valid_hops)');
@@ -64,7 +57,7 @@ for eventID = events_to_check
         
         %%% sort hops by geographical location given the estimated wind direction 
         [~, sort_index] = sort_hops_by_geographic_location(hops_ID, meta_data, storms_info{eventID}.alpha_wind{seq});
-        hops_ID = hops_ID(sort_index);
+        hops_ID = hops_ID(sort_index); %TODO - make sure this is still true even after excluding links)
         rssi = rssi(:,sort_index);
         
         %%% save output
@@ -76,5 +69,35 @@ for eventID = events_to_check
     disp(['end of ' eventID_s]);
 end
 
-%save('storms_info_independent_linksM.mat' , 'storms_info');
+save('storms_info_average4.mat' , 'storms_info');
 clear k map s ind_period
+
+%% print storm_info to table
+events_to_print = 1:253;
+T = table( 0, datetime, datetime, 0, 0, 0, 0, 0) ;
+T.Properties.VariableNames = {'eventID' , 'start_time', 'end_time' , 'duration' , 'active_links' , 'v' , 'direction', 'storm_strength'};
+ii = 0;
+for eventID = events_to_print
+    disp(eventID);
+    
+    rows_event = storms_in_rehovot.eventID == eventID;
+    length_of_sequence = sum(rows_event);
+    dates = [ storms_in_rehovot.ds(rows_event) , storms_in_rehovot.de(rows_event)];
+    
+    for seq = 1:length_of_sequence
+        ii = ii+1;
+        ds = dates(seq,1); de = dates(seq,2);
+        T{ii , 'eventID'} =  eventID;
+        T{ii , 'start_time'} = ds;
+        T{ii , 'end_time'} = de;
+        T{ii, 'duration'} = hours(de-ds);
+        T{ii, 'active_links'} = storms_info{eventID}.active_links{1};
+        T{ii, 'v'} = storms_info{eventID}.v_wind{seq};
+        T{ii , 'direction'} = storms_info{eventID}.alpha_wind{seq};
+        if (isempty(storms_info{eventID}.storm_strength{seq}))
+             T{ii , 'storm_strength'} = -1;
+        else
+             T{ii , 'storm_strength'} = storms_info{eventID}.storm_strength{seq};
+        end
+    end
+end

@@ -1,159 +1,61 @@
-function [rssi, hops_ID, tau, distance, phi] = calc_xcorr_between_specific_links(rssi, hops_ID, meta_data, distanceG, phiG, mode)
-    switch(mode)
-        case 'all_links'
-            tau = calc_xcorr(rssi)';
-            distance = distanceG(hops_ID , hops_ID);
-            distance = distance(:);
-            phi = phiG(hops_ID , hops_ID)';
-            phi = phi(:);
-         case 'all_links_avg'
-            tau = calc_xcorr(rssi)';
-            L = length(hops_ID);
-%             tau = reshape(tau, [], L);
-            tau = reshape(tau, [], L)';
+function [hops_ID, tau, distance, phi] = calc_xcorr_between_specific_links(rssi_orig, hops_ID_orig, meta_data, distanceG, phiG, mode)
+N = length(hops_ID_orig);
+tau = u.calc_xcorr(rssi_orig)';
 
-            unique_hops = unique(hops_ID);
-            M = length(unique_hops);
-%             tau_new = nan(L,M);
-            tau_new = nan(M,L);
-            for uu = 1:length(unique_hops)
-                f = find(hops_ID == unique_hops(uu));
-%                 tau_new(:,uu) = mean( tau(:,f), 2 );
-                tau_new(uu,:) = mean( tau(f,:) );
-            end
-%             tau = tau_new(:);
-            tau = tau_new';
-            tau = tau(:);
-            distance = distanceG(unique_hops , hops_ID);
-%             distance = distanceG(hops_ID, unique_hops);
-            distance = distance(:);
-            phi = phiG(unique_hops , hops_ID)';
-%             phi = phiG(hops_ID, unique_hops)';
-            phi = phi(:);
-            
-            hops_ID = unique_hops;
-        case 'independent_links'
-            [hops_ID, ia, ~] = unique(hops_ID);
-            rssi = rssi(:,ia);
-            hops = u.hop_ID2name(hops_ID, meta_data);
-            M = length(hops);
-            [~ , pivot] = max(meta_data.length(hops)); %pick longest hop as the pivot
-            tau = calc_xcorr(rssi)';
-            tau = reshape(tau, [M M]); %if jau[i,j] <0 then link_i is later in time. (tau(i,j) => 
-            
-            %Take M sample of pivot with all other hops.
-            tau = tau(pivot , :)';
-            distance = distanceG(pivot, hops_ID)';
-            phi = phiG(pivot , hops_ID)';
-            
-            %%% remove the pivot with himself sample.
-            tau(pivot) = [];
-            distance(pivot) = [];
-            phi(pivot) = [];
+tau = reshape(tau, [N, N]);
+distance = distanceG(hops_ID_orig , hops_ID_orig);
+phi = phiG(hops_ID_orig , hops_ID_orig)';
+
+switch(mode)
+    case 'all_samples_article' %takes all matrix values
+        tau = tau(:);
+        distance = distance(:);
+        phi = phi(:);
+    case 'all_samples' %take only upper half of the matrix with no '0' or '~0' cells.
+    case 'average_4' 
+        mask_exclude = triu(true(size(tau)));
+        tau(mask_exclude) = nan;
+        samples = tau(:);
+        [link2, link1] = ndgrid(hops_ID_orig, hops_ID_orig);
+        z = [link1(:), link2(:)];
+        exclude_nan = isnan(samples);
+        samples(exclude_nan) = []; %first column is the column of original tau matrix.
+        z(exclude_nan, :) = [];
+        samples_mat = [z samples];
         
-        case 'independent_linksM'
-            [hops_ID, ia, ~] = unique(hops_ID);
-            rssi = rssi(:,ia);
-            hops = u.hop_ID2name(hops_ID, meta_data);
-            M = length(hops);
-            [~ , pivot] = max(meta_data.length(hops)); %pick longest hop as the pivot
-            tau = calc_xcorr(rssi)';
-            tau = reshape(tau, [M M]); %if jau[i,j] <0 then link_i is later in time. (tau(i,j) => 
-            
-            %take last
-            hops_no_pivot = hops_ID;
-            hops_no_pivot(pivot)=[];
-            other_pivots = datasample(hops_no_pivot,2);
-            ind1 = find(hops_ID ==other_pivots(1));
-            ind2 = find(hops_ID ==other_pivots(2));
-            tau_last = tau(ind1,ind2);
-            distance_last = distanceG(ind1,ind2);
-            phi_last = phiG(ind1,ind2);
-            
-            %Take M sample of pivot with all other hops.
-            tau = tau(pivot , :)';
-            distance = distanceG(pivot, hops_ID)';
-            phi = phiG(pivot , hops_ID)';
-            
-            %%% remove the pivot with himself sample.
-            tau(pivot) = [];
-            distance(pivot) = [];
-            phi(pivot) = [];
-
-            %add the M sample
-            tau = [tau; tau_last];
-            distance =[distance; distance_last];
-            phi = [phi; phi_last];
+        %throw away samples of links from the same hop:
+        similar_links = samples_mat(:,1) == samples_mat(:,2);
+        % TODO - consider throwing away hops with big internal error.
+%         exclude_links = samples_mat(similar_links,3) >= 60;
+        samples_mat(similar_links, :) = [];
         
-        case 'all_hops'
-            [hops_ID, ia, ~] = unique(hops_ID);
-            rssi = rssi(:,ia);
-            tau = calc_xcorr(rssi)';
-            distance = distanceG(hops_ID , hops_ID);
-            distance = distance(:);
-            phi = phiG(hops_ID , hops_ID)';
-            phi = phi(:);
-        case 'super_mode'
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% avg
-            tau = calc_xcorr(rssi)';
-            L = length(hops_ID);
-            tau = reshape(tau, [], L)';
-
-            unique_hops = unique(hops_ID);
-            M = length(unique_hops);
-            tau_new = nan(M,L);
-            for uu = 1:length(unique_hops)
-                f = find(hops_ID == unique_hops(uu));
-                tau_new(uu,:) = mean( tau(f,:) );
-            end
-            tau = tau_new';
-            tau = tau(:);
-%             distance = distanceG(unique_hops , hops_ID);
-%             distance = distance(:);
-%             phi = phiG(unique_hops , hops_ID)';
-%             phi = phi(:);
+        % merge 
+        [c, ~, ic] = unique(samples_mat(:, 1:2), 'rows');
+        N_samples = size(c,1);
+        avg_samples_mat = nan(N_samples, 8); %link1|link2|sample1|sample2|sample3|sample4|distance|phi
+        avg_samples_mat(:,1:2) = c;
+        for i = 1:N_samples
+            ind = samples_mat(:, 1:2) == c(i,:);
+            ind = ind(:,1)==1 & ind(:,2)==1;
+            s = samples_mat(ind, 3);
+            s(end+1:4) = nan; %fill with nan missing samples
+            avg_samples_mat(i, 3:6) = s';
+            avg_samples_mat(i, 7) = distanceG(c(i,1),c(i,2)); %TODO - maybe the opposite
+            avg_samples_mat(i, 8) = phiG(c(i,1),c(i,2));
             
-            %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%5take M samples
-            hops = u.hop_ID2name(unique_hops, meta_data);
-            M = length(hops);
-            [~ , pivot] = max(meta_data.length(hops)); %pick longest hop as the pivot
-            tau = calc_xcorr(rssi)';
-            tau = reshape(tau, [L,M])'; %if jau[i,j] <0 then link_i is later in time. (tau(i,j) => 
-            
-            %take last
-%             hops_no_pivot = unique_hops;
-%             hops_no_pivot(pivot)=[];
-%             other_pivots = datasample(hops_no_pivot,2);
-%             ind1 = find(hops_ID ==other_pivots(1));
-%             ind2 = find(hops_ID ==other_pivots(2));
-%             tau_last = tau(ind1,ind2);
-%             distance_last = distanceG(ind1,ind2);
-%             phi_last = phiG(ind1,ind2);
-            
-            %Take M sample of pivot with all other hops.
-            tau = tau(pivot , :)';
-%             distance = reshape(distance, [M L])';
-            distance = distanceG(pivot, unique_hops)';
-%             phi = reshape(phi, [M L])';
-            phi = phiG(pivot , unique_hops)';
-            
-            %%% remove the pivot with himself sample.
-            tau(pivot) = [];
-            distance(pivot) = [];
-            phi(pivot) = [];
-
-            %add the M sample
-%             tau = [tau; tau_last];
-%             distance =[distance; distance_last];
-%             phi = [phi; phi_last];
-
-            
-    end
+%             avg_samples_mat(i, 7) = distanceG(c(i,2),c(i,1)); %TODO - maybe the opposite
+%             avg_samples_mat(i, 8) = phiG(c(i,2),c(i,1));
+        end
+        avg_s = mean(avg_samples_mat(:, 3:6), 2, 'omitnan');
+        std_s = sqrt(var(avg_samples_mat(:, 3:6), 1, 2, 'omitnan'));
+        exclude_big_variance = std_s > 100;
+        avg_s(exclude_big_variance) = [];
+        avg_samples_mat(exclude_big_variance,:) = [];
+        
+        tau = avg_s;
+        distance = avg_samples_mat(:,7);
+        phi = avg_samples_mat(:,8);
+        hops_ID = unique(avg_samples_mat(:,1));
 end
 
-function tau = calc_xcorr(rssi)
-    [R,lag] = xcorr(rssi);
-    [~,I] = max(abs(R));
-    delay_estimated = lag(I);
-    tau = delay_estimated * 30; %convert sample delay to real time delay
 end

@@ -184,14 +184,15 @@ end
 clear fn k map s ind_period
 
 %% save data to csv
-save_to = 'C:\Users\mhadar\Documents\personal\thesis_materials\graphs_and_figures\for_adam\';
+save_to = '..\results\for_adam\';
+
 % ds = datetime(2019,03,23,00,00,00);
 % de = datetime(2019,03,26,00,00,00);
-%name = 'march_24_25';
+% name = 'march_24_25_new';
 
 ds = datetime(2019,03,29,00,00,00);
 de = datetime(2019,04,02,00,00,00);
-name = 'april_02';
+name = 'april_02_new';
 
 time_axis = ds:seconds(30):de;
 hops = pick_hops(meta_data, 0.01);
@@ -207,10 +208,11 @@ for ii = 1:length(hops_ID)
 end
 saveas(gcf, [save_to name '.jpg']);
 
-time_axis.Format = 'yyyy-MM-dd hh:mm:ss';
+time_axis.Format = 'yyyy-MM-dd HH:mm:ss';
 time_axis = time_axis';
+time_axis_posix = posixtime(time_axis);
 
-filename = fullfile(save_to, name);
+filename = fullfile(save_to, [name '.csv']);
 [fid, msg] = fopen(filename, 'wt');
 if fid < 0
   error('Could not open file "%s" because "%s"', fid, msg);

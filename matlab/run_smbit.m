@@ -230,7 +230,7 @@ mid_path_radius = 8.656* sqrt( meta_data.length ./ frequency); %[m]
 end
 
 %%
-storms_in_rehovot_path = 'C:\Users\mhadar\Documents\personal\thesis_materials\data\storms_in_rehovot.txt';
+storms_in_rehovot_path = '..\data\storms_in_rehovot.txt';
 storms_in_rehovot = readtable(storms_in_rehovot_path,'ReadVariableNames',false, 'delimiter' , '\t', 'Format','%u%q%q%q%q', 'HeaderLines', 0);
 
 storms_in_rehovot.Properties.VariableNames = { 'eventID' 'ds' 'de' 'exclude_hops' 'comments' };

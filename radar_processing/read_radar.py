@@ -39,7 +39,7 @@ def calc_point_of_interest(im):
 
 
 if __name__ == "__main__":
-    day = Path('data/ims/rainmaps_10min_2018/2018/11/06')
+    day = Path('data/ims/rainmaps_10min_2018/2018/12/06')
     files = day.glob('RR*.asc')
 
     # radar_location = 32.007, 34.81456004
@@ -99,7 +99,7 @@ if __name__ == "__main__":
         ax.set_title(directions_str + '\n' + f.name)
         plt.show(block=False)
         plt.pause(.1)
-        plt.savefig(f'results/radar/2018_11_06/{f.name[:-4]}.png')
+        plt.savefig(f'results/radar/2018_12_06/{f.name[:-4]}.png')
         ax.cla()
 
         RM_prev = RM_curr

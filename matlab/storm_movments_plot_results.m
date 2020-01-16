@@ -1,102 +1,8 @@
-%%
-storms_info   = cell(253,1);
-gt_parameters = nan( 253 ,2 , 4);
-%%
-%load('storms_info_normalized.mat');
-%storms_info = storms_info_normalized;
-
 load('storms_info.mat');
-
-%% run full algorithm for all rain events:
-events_to_check = [28 42]; %allevents
-
-v_wind0 = 20;
-alpha_wind0 = 360;
-lb = [0,0];
-ub = [200,360];
-
-hops_in_total = pick_hops(meta_data , 0);
-hops_in_total(strcmp(hops_in_total , 'muni_katzirnew')) = []; %TODO - tmp until I will have all cordinates
-hops_in_total(strcmp(hops_in_total , 'katzirnew_katzirtichon')) = []; %TODO - tmp until I will have all cordinates
-
-for eventID = events_to_check
-    eventID_s = ['event' num2str(eventID)];
-    disp(eventID_s);
-    
-    rows_event = storms_in_rehovot.eventID == eventID;
-    length_of_sequence = sum(rows_event);
-    dates = [ storms_in_rehovot.ds(rows_event) , storms_in_rehovot.de(rows_event)];
-    ds_event = dates(1,1); de_event = dates(1,2);
-    exclude_hops = storms_in_rehovot.exclude_hops(rows_event);
-
-    for seq = 1:length_of_sequence
-        ds = dates(seq,1); de = dates(seq,2);
-        
-        hops = hops_in_total;
-        [~,ia,~] = intersect(hops,exclude_hops{seq}, 'stable');
-        hops(ia) = [];
-    
-        [valid_hops , tau , valid_rssi , valid_time_axis] = calc_xcorr_between_hops(hops, db, ds, de ,meta_data);
-        [distance, phi] = calc_phi_and_distance_for_each_pair_of_hops( valid_hops, meta_data);
-
-        % MLE (x - is the parameter to estimate)
-        %weight = 1./(meta_data.length(valid_hops) * meta_data.length(valid_hops)');
-        weight = 1;
-        residual = @(x) weight(:).*(tau(:) - (distance(:)/x(1)) .* cosd(phi(:) - x(2)));
-
-        x = lsqnonlin(residual,[v_wind0 alpha_wind0]);
-        %x = lsqnonlin(residual,[v_wind0 alpha_wind0], lb ,ub);
-
-        storms_info{eventID}.v_wind{seq} = x(1);  
-        storms_info{eventID}.alpha_wind{seq} = wrapTo360(x(2)); 
-        
-        [~ , valid_hops_arranged, sort_index] = calc_effective_distance_and_sort_hops(valid_hops , meta_data , storms_info{eventID}.alpha_wind{seq}, true);
-
-        storms_info{eventID}.valid_rssi_arranged{seq} = valid_rssi(: , sort_index);
-        storms_info{eventID}.valid_hops_arranged{seq} = valid_hops_arranged;
-        storms_info{eventID}.active_hops{seq} = length(storms_info{eventID}.valid_hops_arranged{seq});
-        storms_info{eventID}.valid_time_axis{seq} = valid_time_axis;
-        storms_info{eventID}.storm_strength{seq} = max(max(storms_info{eventID}.valid_rssi_arranged{seq}));
-        
-    end
-    disp(['end of ' eventID_s]);
-end
-
-%save('storms_info.mat' , 'storms_info');
-clear k map s ind_period
-
-%% print storm_info to table
-events_to_print = 1:253;
-T = table( 0 , datetime , datetime , 0 ,0,0 ,0, 0,0) ;
-T.Properties.VariableNames = {'eventID' , 'start_time', 'end_time' , 'duration' , 'active_hops' , 'v' , 'direction', 'storm_strength','valid_rows'};
-ii = 0;
-for eventID = events_to_print
-    disp(eventID);
-    
-    rows_event = storms_in_rehovot.eventID == eventID;
-    length_of_sequence = sum(rows_event);
-    dates = [ storms_in_rehovot.ds(rows_event) , storms_in_rehovot.de(rows_event)];
-    
-    for seq = 1:length_of_sequence
-        ii = ii+1;
-        ds = dates(seq,1); de = dates(seq,2);
-        T{ii , 'eventID'} =  eventID;
-        T{ii , 'start_time'} = ds;
-        T{ii , 'end_time'} = de;
-        T{ii, 'duration'} = hours(de-ds);
-        T{ii, 'active_hops'} = storms_info{eventID}.active_hops{1};
-        T{ii, 'v'} = storms_info{eventID}.v_wind{seq};
-        T{ii , 'direction'} = storms_info{eventID}.alpha_wind{seq};
-        if (isempty(storms_info{eventID}.storm_strength{seq}))
-             T{ii , 'storm_strength'} = -1;
-        else
-             T{ii , 'storm_strength'} = storms_info{eventID}.storm_strength{seq};
-        end
-        %T{ii , 'valid_rows'} = storms_info{eventID}.valid_rows_precentage{seq};
-        T{ii , 'valid_rows'} = sum(storms_info{eventID}.valid_rows_precentage{seq} ~=0)/length(storms_info{eventID}.valid_rows_precentage{seq});
-
-    end
-end
+storms_info_article = storms_info;
+load('storms_info_average4.mat');
+storms_info_average4 = storms_info;
+clear storms_info
 %% print result per event and not per sequence:
 events_to_check = 1:253; %allevents
 
@@ -264,15 +170,17 @@ for eventID = events_to_check
 end
 % saveas(f_v_vs_date , [dir_name f_v_vs_date.Name '.jpg']);
 
-%% 
+%% extract resilts from structers:
 events_to_check = 1:253;
        
-dir_name = 'C:\Users\mhadar\Documents\personal\thesis_materials\graphs_and_figures\all_hops_all_events\';
-f_hist = figure('Name' ,'histogram', 'units','normalized','outerposition',[0 0 1 1]);
-storms_info_for_presentation1 = storms_info;
-v_wind     = nan(405,1);
-alpha_wind = nan(405,1);
-duration   = nan(405,1);
+duration           = nan(405,1);
+
+v_wind_article     = nan(405,1);
+alpha_wind_article = nan(405,1);
+
+v_wind_average4     = nan(405,1);
+alpha_wind_average4 = nan(405,1);
+
 counter = 0;
 for eventID = events_to_check
     eventID_s = ['event' num2str(eventID)];
@@ -288,18 +196,57 @@ for eventID = events_to_check
     end
     for seq = starting_sequence:length_of_sequence
         ds = dates(seq,1); de = dates(seq,2);
-        counter = counter+1;     
-        v_wind(counter)     = storms_info_for_presentation1{eventID}.v_wind{seq};
-        alpha_wind(counter) = storms_info_for_presentation1{eventID}.alpha_wind{seq};
+        counter = counter+1;
         duration(counter) = minutes(de-ds);
+        
+        v_wind_article(counter)     = storms_info_article{eventID}.v_wind{seq};
+        alpha_wind_article(counter) = storms_info_article{eventID}.alpha_wind{seq};
+        
+        v_wind_average4(counter)     = storms_info_average4{eventID}.v_wind{seq};
+        alpha_wind_average4(counter) = storms_info_average4{eventID}.alpha_wind{seq};
     end
     disp(['end of ' eventID_s]);
 end
-% figure;
-% histogram(v_wind, 0:100);
+%% plot histograms
+% map = brewermap(3,'Set1'); 
+if(0)
+    parametr_list = {v_wind_article , v_wind_average4};
+    name = 'wind speed';
+    th_for_clipping = 200;
+    th_for_histogram = 50;
+    y_lim = 20;
+else
+    parametr_list = {alpha_wind_article, alpha_wind_average4};
+    name = 'wind direction';
+    th_for_clipping = 360;
+    th_for_histogram = 360;
+    y_lim = 7;
+end
+colors = {'r', 'g'};
+description = {'article', 'average4'};
+figure;
+for i = 1:length(parametr_list)
+    subplot(1,2,i);
+    histogram(parametr_list{i},0:0.5:th_for_histogram,'facecolor',colors{i},'facealpha',.5,'edgecolor','none');
+    
+    title([name ' histogram']);
+    xlabel(name);
+    ylabel('amount of events');
+    box off;
+    axis tight;
+    legend(description{i}, 'location', 'northeast');
+    legend boxoff;
+    ylim([0,y_lim]);
+end
+saveas(gcf, ['../results/hist_articel_Vs_average4_' name '.jpg']);
+figure;
+scatter(parametr_list{1}, parametr_list{2}, '*');
+hold on;
+plot([1, th_for_clipping], [1, th_for_clipping]);
+xlim([0, th_for_clipping]);
+ylim([0, th_for_clipping]);
+title('scatter plot');
+xlabel('article');
+ylabel('average4');
+saveas(gcf, ['../results/scatter_articel_Vs_average4_' name '.jpg']);
 
-% figure; 
-% histogram(alpha_wind, 0:360)
-
-figure; 
-histogram(duration, 0:1:1000)
