@@ -1,0 +1,12 @@
+# conda env create -f environment.yml
+name: thesis_env
+dependencies:
+- python
+- numpy
+- pandas
+- pip
+- scipy
+- ipykernel
+- matplotlib
+
+# TODO: add "conda install -c conda-forge folium"

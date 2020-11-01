@@ -1,5 +1,5 @@
 function [max_daily , timestamp_of_max] = extract_max_daily( time_series , value_series , where_are_the_periods)
-    [start,len,k1] = ZeroOnesCount(where_are_the_periods);
+    [start,len,k1] = u.ZeroOnesCount(where_are_the_periods);
     %disp([start(1:k1); len(1:k1)]);
     max_daily = nan(k1,1);
     timestamp_of_max = NaT(k1,1);

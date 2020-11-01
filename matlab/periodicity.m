@@ -1,7 +1,9 @@
+%% This notebook is for reproducing 'dry period analysis' (Chapter 4) results:
+
 %% init structs:
 %TODO - adjust to new meta_data and db structs. 
-for i = (unique(meta_data.hop_num, 'stable'))'
-    idx = meta_data.hop_num == i;
+for i = (unique(meta_data.hop_ID, 'stable'))'
+    idx = meta_data.hop_ID == i;
     channel_names = meta_data.link_name(idx);
     for n = 1:length(channel_names)
         cn = char(channel_names(n));
@@ -10,7 +12,7 @@ for i = (unique(meta_data.hop_num, 'stable'))'
 end
 %% calc statistics
 for hop = hops
-    idx = meta_data.hop_num == hop;
+    idx = meta_data.hop_ID == hop;
     channel_names = meta_data.link_name(idx);
     for n = 1:length(channel_names)
         cn = char(channel_names(n));
@@ -99,9 +101,9 @@ end
 %      t4t1 = figure('Name', 't4 - t1');
      %f22 = figure('Name', 'inx peaks fluctuations');
      
-map = distinguishable_colors(24);
+map = u.distinguishable_colors(24);
 for hop = hops
-    idx = meta_data.hop_num == hop;
+    idx = meta_data.hop_ID == hop;
     channel_names = meta_data.link_name(idx);
     for n = 1%1:length(channel_names)
         cn = char(channel_names(n));
@@ -168,9 +170,9 @@ for hop = hops
 end
 
 %% plot AVG anf SD 
-map = distinguishable_colors(3); %differiating for channel. need 3 for hop1 
+map = u.distinguishabsle_colors(3); %differiating for channel. need 3 for hop1 
 for hop = hops
-    idx = meta_data.hop_num == hop;
+    idx = meta_data.hop_ID == hop;
     channel_names = meta_data.link_name(idx);
     
     figure;
@@ -197,13 +199,13 @@ for hop = hops
 end
 
 %% FFT
-map = distinguishable_colors(35);
+map = u.distinguishable_colors(35);
 nn=0;
 %freq_low_th = freq_harmonics-0.02e-5;
 %freq_high_th = freq_harmonics+0.02e-5;
 figure;
 for i = hops
-    idx = meta_data.hop_num == i;
+    idx = meta_data.hop_ID == i;
     channel_names = meta_data.link_name(idx);
 % %     figure;
     for n = 1%1:size(channel_names,1)
@@ -216,7 +218,7 @@ for i = hops
         %x = max(A , db.(cn).avg(ind_period) ); % take only max/min peaks
         x=A-db.(cn).avg(ind_period);
         %x = conv(x, ones(1,20)/20 , 'same');
-        [P1 , f ] = calc_fft(x , 30);
+        [P1 , f ] = u.calc_fft(x , 30);
         
 % %         hold on; subplot(1,2, 2)
         %hold on; subplot(length(hops),2, 2*nn +2) %for plotting all hops in the same figure;
@@ -256,7 +258,7 @@ end
 % plot( hops , nan)
 % nn = 1;
 % for i = hops
-%     idx = meta_data.hop_num == i;
+%     idx = meta_data.hop_ID == i;
 %     channel_names = meta_data.link_name(idx);
 %     for n = 1%1:size(channel_names,1)
 %         cn = char(channel_names(n));
@@ -273,7 +275,7 @@ end
 figure;
 plot(12,nan);
 for i = hops
-    idx = meta_data.hop_num == i;
+    idx = meta_data.hop_ID == i;
     channel_names = meta_data.link_name(idx);
     for n = 1%1:size(channel_names,1)
         cn = char(channel_names(n));
@@ -290,9 +292,9 @@ end
 
 figure;
 bias = 0;
-map = distinguishable_colors(24);
+map = u.distinguishable_colors(24);
 for i = hops
-    idx = meta_data.hop_num == i;
+    idx = meta_data.hop_ID == i;
     channel_names = meta_data.link_name(idx);
     for n = 1:size(channel_names,1)
         cn = char(channel_names(n));
@@ -322,10 +324,10 @@ hold on; plot( suntime_db.time , hours(suntime_db.sunset - suntime_db.sunrize), 
 % f11 = figure('Name', 'max peaks fluctuations');
 % f22 = figure('Name', 'inx peaks fluctuations');
 % f33 = figure('Name' , 'delta between max and min');     
-map = distinguishable_colors(24);
+map = u.distinguishable_colors(24);
 
 for hop = hops
-    idx = meta_data.hop_num == hop;
+    idx = meta_data.hop_ID == hop;
     channel_names = meta_data.link_name(idx);
     for n = 1%1:length(channel_names)
         cn = char(channel_names(n));

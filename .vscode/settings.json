@@ -1,4 +1,4 @@
 {
-    "python.pythonPath": "C:\\Users\\mhadar\\AppData\\Local\\Continuum\\anaconda3\\envs\\mor_env\\python.exe",
-    "terminal.integrated.inheritEnv": false
+    "terminal.integrated.inheritEnv": false,
+    "python.pythonPath": "c:\\Users\\mhadar\\Anaconda3\\envs\\thesis_env\\python.exe"
 }

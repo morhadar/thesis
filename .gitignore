@@ -1,20 +1,27 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# project settings:
+.vscode/
+
 ##data:
 data/
-*.mat
-materials/*
+materials/
 
 ##exclude 3-parties sourcecode:
 TAU_CLDB_API/
-Rain simulator/
+Rain_simulator/
 #IMS read radar:
 radar_processing/radar_lonlat.py
 radar_processing/plot_daily_radar.py
 radar_processing/radar_coord.py
 radar_processing/data_digger.py
 radar_processing/*.asc.gz
-radar_processing/*.png
+radar_processing/DailyAnalysis201804270600.png
 #rain-master
-rainymotion-master/*
+rainymotion-master/
 
 ##results
 results/

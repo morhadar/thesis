@@ -1,6 +1,6 @@
 %% init precipitation vector
 for hop_num = hops
-    idx = meta_data.hop_num == hop_num;
+    idx = meta_data.hop_ID == hop_num;
     channel_names = meta_data.link_name(idx);
     for n = 1:length(channel_names)
         cn = char(channel_names(n));
@@ -20,10 +20,10 @@ for hop_num = hops
     if ( hop_num == 14 && true) %exclude junc10_to_junc11 
         continue;
     end
-    idx = meta_data.hop_num == hop_num;
+    idx = meta_data.hop_ID == hop_num;
     
     channel_names = meta_data.link_name(idx);
-    L = meta_data.length_KM(idx); L = L(1);
+    L = meta_data.length(idx); L = L(1);
     min_rain_rate = meta_data.minimal_rain_rate(idx); min_rain_rate = min_rain_rate(1);
     %TODO - consider add 'omitnan' so sum functions.!!!!!!!!!!!!
     for n = 1:size(channel_names,1)
@@ -71,9 +71,9 @@ for hop_num = hops
     if ( hop_num == 14 && true) %exclude junc10_to_junc11 
         continue;
     end
-    idx = meta_data.hop_num == hop_num;
+    idx = meta_data.hop_ID == hop_num;
     channel_names = meta_data.link_name(idx);
-    L = meta_data.length_KM(idx); L = L(1);
+    L = meta_data.length(idx); L = L(1);
     min_rain_rate = meta_data.minimal_rain_rate(idx); min_rain_rate = min_rain_rate(1);
     
     for n = 1:length(channel_names)

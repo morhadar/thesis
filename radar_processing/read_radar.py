@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Arrow, Circle
 import cv2
 
-
 def rehovot_latlong_borders():
     #links min/max locations:
     # min_lat = 31.87313  # south
@@ -39,7 +38,7 @@ def calc_point_of_interest(im):
 
 
 if __name__ == "__main__":
-    day = Path('data/ims/rainmaps_10min_2018/2018/12/06')
+    day = Path('data/raw_data/ims/rainmaps_10min_2018/2018/11/06')
     files = day.glob('RR*.asc')
 
     # radar_location = 32.007, 34.81456004
@@ -61,7 +60,7 @@ if __name__ == "__main__":
     color = np.random.randint(0,1,(100,3))
     max_rain_rate = 20
 
-    fig, ax = plt.subplots(1)
+    fig, ax = plt.subplots(1)#, figsize=(15,15))
     ax.add_patch(radar)
     img_array = []
     RM_prev = pd.DataFrame(pd.read_csv(next(files), sep=' ', header=None)).values
@@ -106,4 +105,3 @@ if __name__ == "__main__":
         # p0 = good_new.reshape(-1,1,2)
 
     cv2.destroyAllWindows()
-

@@ -1,13 +1,13 @@
 %% pick hops and dates
 hops = pick_hops(meta_data, 0.01);
-[ds ,de] = pick_rain_event(93);
+[ds, de] = pick_rain_event(93);
 %% plot attenuation of hops: 
 bias = 0;
 active_links_during_the_event = false( length(hops),1);
 %nn=1;
 
 figure; title([ char(ds) ' - ' char(de)]);
-subplot(1,3,[1 2]); 
+subplot(1, 3, [1 2]); 
 hold on; 
 time_axis = ds:seconds(30):de;
 for i = 1:length(hops)
@@ -23,7 +23,8 @@ for i = 1:length(hops)
         %rsl = conv( rsl , [0, 1 -1] , 'same');
         %rsl = rsl/meta_data{hop, 'length'}; % normalization
         mean_rsl = db.(hop).(direction).mean;
-        yy = rsl - mean_rsl;
+%         yy = rsl - mean_rsl;
+        yy = rsl;
         tt = datetime(db.(hop).(char(direction)).raw(:,1), 'ConvertFrom', 'posixtime') ;
         ind_period = tt > ds & tt < de;
         yy = yy(ind_period);
@@ -33,36 +34,35 @@ for i = 1:length(hops)
 %         ts  = timeseries( yy , datestr( tt ) );
 %         ts_new = ts.resample(datestr(time_axis),'zoh' );
 % 
-%         plot( time_axis    , ts_new.Data - bias   , 'DisplayName', [num2str(hop_ID) '-' hop ' ' direction] , 'color', map_color_by_hop(hop_ID,:));
-%         text( time_axis(1) , ts_new.Data(1) - bias, num2str(hop_ID),'color', map_color_by_hop(hop_ID,:));
-        plot( tt    , yy - bias , 'DisplayName', [num2str(hop_ID) '-' hop ' ' direction] , 'color', map_color_by_hop(hop_ID,:), 'LineWidth' , 0.1);
-        text( tt(1) , yy(1) - bias, num2str(hop_ID),'color', map_color_by_hop(hop_ID,:));
+%         plot( time_axis    , ts_new.Data - bias   , 'DisplayName', [num2str(hop_ID) '-' hop ' ' direction] , 'color', meta_data.color(hop_ID, :));
+%         text( time_axis(1) , ts_new.Data(1) - bias, num2str(hop_ID),'color', meta_data.color(hop_ID, :));
+        plot( tt    , yy - bias , 'Marker', '.', 'DisplayName', [num2str(hop_ID) '-' hop ' ' direction] , 'color', meta_data.color(hop_ID, :), 'LineWidth' , 0.1);
+        text( tt(1) , yy(1) - bias, num2str(hop_ID),'color', meta_data.color(hop_ID, :));
         
-        bias = bias +2;        
+%         bias = bias +2;        
         xlim([ds de]);            
     end    
 end
 hold off;
 
-fn = fieldnames(ims_db);
-for k=1:numel(fn)
-    s = char(fn(k));
+for k = 1:numel(ims_db.stations)
+    s = char(ims_db.stations(k));
     ind_period = ims_db.(s).time > ds & ims_db.(s).time<de;
 
     subplot(1,3,3); title('rain gauges'); ylabel('R mm/h');
     legend('show');  
-    hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).rain(ind_period) * 6, 'DisplayName', s, 'color' , map_color_by_station(k,:));
+    hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).rain(ind_period) * 6, 'DisplayName', s, 'color' , ims_db.(s).color);
 end
 if any(active_links_during_the_event)
     subplot(1,3,3); hold on; plot( ds:seconds(30):de , (meta_data.minimal_rain_rate(active_links_during_the_event) * ones(size(ds:seconds(30):de)))' , 'HandleVisibility','off', 'color' , 'k'); %TODO give it the same color as the hop
 end
 
-%clear i j bias map nn directions direction A t mean rsl active_links_during_the_event fn k map s ind_period ts ts_new
+%clear i j bias map nn directions direction A t mean rsl active_links_during_the_event k map s ind_period ts ts_new
 
 %% plot measurments of IMS per station:
 fn = fieldnames(ims_db);
 map = distinguishable_colors(length(fn));
-for k=1%1:numel(fn)
+for k = 1%1:numel(fn)
     figure;
     s = char(fn(k));
     ind_period = ims_db.(s).time > ds & ims_db.(s).time<de;
@@ -86,14 +86,12 @@ end
 
 clear fn map k s ind_period 
 %% plot rain gaues 
-stations = ["beit_dagan" , "hafetz_haim" , "nahshon" , "kvotzat_yavne"];
-
 figure;
 title('rainy days');
 xlabel('date and time');
 ylabel('R mm/h');
-for i = 1%1:4
-    s = stations(i);
+for i = 1:4
+    s = char(ims_db.stations(i));
     ind_period = ims_db.(s).time > ds & ims_db.(s).time<de;
     hold on; plot(ims_db.(s).time(ind_period) ,ims_db.(s).rain(ind_period) * 6, 'DisplayName', s);
 end
@@ -105,13 +103,13 @@ end
 % hold on; plot( ds:seconds(30):de , 40*ones(size(ds:seconds(30):de)) , 'DisplayName' , 'upperbound', 'color' , 'g', 'LineWidth' ,2);
 % if(true) % add minimal threshold for specific links
 %     for i = hops
-%         idx = meta_data.hop_num == i;
+%         idx = meta_data.hop_ID == i;
 %         idx = find(idx,1);
 %         hold on; plot( ds:seconds(30):de , meta_data.minimal_rain_rate(idx)*ones(size(ds:seconds(30):de)) , 'DisplayName' , ['hop ' num2str(i) ' boundary'], 'color' , 'k');
 %     end
 % end
 
-clear i s ind_period stations
+clear i s ind_period
 
 %% plot north-south or east-west besides rain gauges:
 figure;
@@ -196,14 +194,14 @@ name = 'april_02_new';
 
 time_axis = ds:seconds(30):de;
 hops = pick_hops(meta_data, 0.01);
-[rssi , hops_ID, link_ID] = extract_rssi(hops, db , ds ,de , meta_data, false, false);
+[rssi , hops_ID, link_ID] = u.extract_rssi(hops, db , ds ,de , meta_data, false, false);
 
 figure;
 title('rssi');
 bias = 0;
 for ii = 1:length(hops_ID)
-    hold on; plot(time_axis, rssi(:,ii), 'color' , map_color_by_hop(hops_ID(ii), :) , 'DisplayName', ['hop:' num2str(hops_ID(ii))]);
-    hold on; text(time_axis(1), rssi(1,ii), num2str(hops_ID(ii)), 'color' , map_color_by_hop(hops_ID(ii),: ));
+    hold on; plot(time_axis, rssi(:,ii), 'color', meta_data.color(hops_ID(ii), :) , 'DisplayName', ['hop:' num2str(hops_ID(ii))]);
+    hold on; text(time_axis(1), rssi(1,ii), num2str(hops_ID(ii)), 'color', meta_data.color(hops_ID(ii), :));
     bias = bias+5;
 end
 saveas(gcf, [save_to name '.jpg']);

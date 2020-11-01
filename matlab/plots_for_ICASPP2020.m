@@ -20,16 +20,16 @@ for eventID = events_to_check
     subplot(1,3,[1 2]);
     title('RSL');
     bias = 0;
-    for ii = 1:storms_info{eventID}.active_hops{seq}
+    for ii = 1:storms_infoascds{eventID}.active_hops{seq}
         hop = char(storms_info{eventID}.valid_hops_arranged{seq}(ii));
         hop_ID = meta_data.hop_ID(hop);
-        hold on; plot( storms_info{eventID}.valid_time_axis{seq}   , storms_info{eventID}.valid_rssi_arranged{seq}(: , ii)  - bias ,'color' , map_color_by_hop(hop_ID,: ) , 'DisplayName', [num2str(hop_ID) '-' hop]);
-        hold on; text( storms_info{eventID}.valid_time_axis{seq}(1), storms_info{eventID}.valid_rssi_arranged{seq}(1 , ii) - bias  , num2str(hop_ID), 'color' , map_color_by_hop(hop_ID,: ));
+        hold on; plot( storms_info{eventID}.valid_time_axis{seq}   , storms_info{eventID}.valid_rssi_arranged{seq}(: , ii)  - bias ,'color' , meta_data.color(hop_ID, :) , 'DisplayName', [num2str(hop_ID) '-' hop]);
+        hold on; text( storms_info{eventID}.valid_time_axis{seq}(1), storms_info{eventID}.valid_rssi_arranged{seq}(1 , ii) - bias  , num2str(hop_ID), 'color' , meta_data.color(hop_ID, :));
         bias = bias+5;
     end
 
-    subplot(1,3,[3]);
-    show_hops_on_map ( storms_info{eventID}.valid_hops_arranged{seq} , meta_data, map_color_by_hop, false,true);
+    subplot(1, 3, [3]);
+    u.show_hops_on_map(storms_info{eventID}.valid_hops_arranged{seq}, meta_data, false, true);
 
     disp(['end of ' eventID_s]);
 end
@@ -88,7 +88,7 @@ delta_x = abs(x1-x2);
 delta_y = abs(y1-y2);
 a = atand(delta_y/delta_x);
 %a = atand(delta_x/delta_y);
-theta_naive = 180+ 180 -a
+theta_naive = 180 + 180 -a
 
 %event 42:
 x1 = meta_data.x_center(meta_data.hop_ID == 30);
